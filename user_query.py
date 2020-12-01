@@ -39,7 +39,8 @@ def create_connection(db_file):
 
 
 
-def select(conn, str):
+def search(conn):
+	str = "select Name from sales limit 10"
 	cur = conn.cursor()
 	cur.execute(str)
 
@@ -52,16 +53,45 @@ def select(conn, str):
 
 
 
+def watch(conn):
+	webbrowser.open("https://twitch.tv")
 
 
-def parse(conn, str):
-	select(conn, "Select name from sales where Publisher = \"Nintendo\" order by Year ASC limit 10")
+
+
+def data(conn):
+	print("I dunno how matplotlib works!!")
+
+
+
+
+def menu(int):
+	switcher = {
+		0: "\n\nWelcome to the video game sales database!\nWhat would you like?\nSearch for games (search/s)\nWatch a particular game (watch/w)\nLook through data about games (data/d)\nQuit application (quit/q)\n"
+	}
+	print switcher.get(int, "ERROR")
+
+
+
 
 def main():
 	conn = create_connection("proj.db")
 	with conn: 
-		val = raw_input("What do you want from the database?\n")
-		parse(conn, val)
+		menu(0)
+		val = raw_input()
+		while val != "q" and val != "quit":
+			if val == "s" or val == "search":
+				search(conn)
+			elif val == "w" or val == "watch":
+				watch(conn)
+			elif val == "d" or val == "data":
+				data(conn)
+			menu(0)
+			val = raw_input()
+		print("Have a great day!")
 		#webbrowser.open("https://twitch.tv")
+
+
+
 
 main()
