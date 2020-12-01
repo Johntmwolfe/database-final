@@ -22,6 +22,9 @@ between (values) and (value)
 (column) like (pattern)  -  (pattern) is a str that the original must match to
 (column) glob (a type of regex expression) 		//more on sqlitetutorial.net/sqlite-glob/
 (column) = NULL
+
+order of operations:
+	select from where group having order limit
 """
 
 def create_connection(db_file):
@@ -33,6 +36,9 @@ def create_connection(db_file):
 		print(e)
 	return conn
 
+
+
+
 def select(conn, str):
 	cur = conn.cursor()
 	cur.execute(str)
@@ -43,14 +49,19 @@ def select(conn, str):
 		print(row)
 """how to select by a certain priority == ("select * from tasks where priority=?", (priority,))"""
 
+
+
+
+
+
 def parse(conn, str):
-	select(conn, "Select name from sales")
+	select(conn, "Select name from sales where Publisher = \"Nintendo\" order by Year ASC limit 10")
 
 def main():
 	conn = create_connection("proj.db")
 	with conn: 
 		val = raw_input("What do you want from the database?\n")
 		parse(conn, val)
-		webbrowser.open("https://twitch.tv")
+		#webbrowser.open("https://twitch.tv")
 
 main()
