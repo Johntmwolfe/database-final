@@ -1,3 +1,5 @@
+import time
+import random
 import sqlite3
 import webbrowser
 from sqlite3 import Error
@@ -52,9 +54,88 @@ def search(conn):
 
 
 
+def reduce(lizt):
+	#[0] == name, [1] == platform, [2] == year, [3] == genre
+	clone = []
+	for row in lizt:
+		clone.append(row)
+	menu(1)
+	val = raw_input()
+	if val == "y":
+		val = raw_input("Type in a year: ")
+		i = 0
+		while i < len(clone):
+			if clone[i][2] == val:
+				i += 1
+			else:
+				clone.pop(i)
+	elif val == "g":
+		val = raw_input("Type in the genre: ")
+		i = 0
+		while i < len(clone):
+			if clone[i][3] == val:
+				i += 1
+			else:
+				clone.pop(i)
+	elif val == "c":
+		val = raw_input("Type in a console: ")
+		i = 0
+		while i < len(clone):
+			if clone[i][1] == val:
+				i+= 1
+			else:
+				clone.pop(i)
+	elif val == "p":
+		x = 1;
+		for row in lizt:
+			print(str(x) + ": ")
+			print(row)
+			x += 1
+	elif val == "n":
+		val = raw_input("Type in a title: ")
+		i = 0
+		while i < len(clone):
+			if clone[i][0].find(val) != -1:
+				i += 1
+			else:
+				clone.pop(i)
+	else:
+		print("Not valid, asshole.")
+
+
+	if len(clone) == 0:
+		print("No games matched that search. Try again?\n")
+		return lizt
+	else:
+		return clone;
+
+
+
 
 def watch(conn):
-	webbrowser.open("https://twitch.tv")
+	line = "https://twitch.tv/directory/game/"
+	val = raw_input("Looking for a specific game, or something new? (specific/new)\n")
+	curr = conn.cursor()
+	if val == "specific" or val == "s":
+		val = raw_input("Type of the name of the game in: ")
+		search = "select name, platform, year, genre from sales where name like '%" + val + "%'"
+		curr.execute(search)
+
+		rows = curr.fetchall()
+		while len(rows) > 1:
+			rows = reduce(rows)
+			time.sleep(.2)
+
+		for row in rows:
+			line += row[0]
+	elif val == "new" or val == "n":
+		curr.execute("select name from sales where year > '2015'")
+
+		rows = curr.fetchall()
+		x = random.randrange(0,len(rows))
+		line += rows[x][0]
+
+	webbrowser.open(line)
 
 
 
@@ -67,7 +148,8 @@ def data(conn):
 
 def menu(int):
 	switcher = {
-		0: "\n\nWelcome to the video game sales database!\nWhat would you like?\nSearch for games (search/s)\nWatch a particular game (watch/w)\nLook through data about games (data/d)\nQuit application (quit/q)\n"
+		0: "\n\nWelcome to the video game sales database!\nWhat would you like?\nSearch for games (search/s)\nWatch a particular game (watch/w)\nLook through data about games (data/d)\nQuit application (quit/q)\n",
+		1: "\nMultiple games match that search. Can you be more specific?\nChoose a more specific name(n)\nChoose a year(y)\nChoose a genre(g)\nChoose a console of platform(c)\nPrint the games you have so far(p)\n"
 	}
 	print switcher.get(int, "ERROR")
 
@@ -75,6 +157,7 @@ def menu(int):
 
 
 def main():
+	random.seed()
 	conn = create_connection("proj.db")
 	with conn: 
 		menu(0)
@@ -86,6 +169,7 @@ def main():
 				watch(conn)
 			elif val == "d" or val == "data":
 				data(conn)
+			time.sleep(.5)
 			menu(0)
 			val = raw_input()
 		print("Have a great day!")
