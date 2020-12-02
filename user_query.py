@@ -41,36 +41,37 @@ def create_connection(db_file):
 
 
 def process(parser, line):
+	liz = []
 	while len(parser) > 0:
 		letter = parser[:1]
 		parser = parser[1:]
 		if letter == "1":
-			line += "standing, "
+			liz.append("standing")
 		elif letter == "2":
-			line += "name, "
+			liz.append("name")
 		elif letter == "3":
-			line += "platform, "
+			liz.append("platform")
 		elif letter == "4":
-			line += "year, "
+			liz.append("year")
 		elif letter == "5":
-			line += "genre, "
+			liz.append("genre")
 		elif letter == "6":
-			line += "publisher, "
+			liz.append("publisher")
 		elif letter == "7":
-			line += "NA_Sales, "
+			liz.append("NA_Sales")
 		elif letter == "8":
-			line += "EU_Sales, "
+			liz.append("EU_Sales")
 		elif letter == "9":
-			line += "JP_Sales, "
+			liz.append("JP_Sales")
 		elif letter == "a":
-			line += "Other_Sales, "
+			liz.append("Other_Sales")
 		elif letter == "b":
-			line += "Global_Sales, "
+			liz.append("Global_Sales")
 		else:
 			print("Not a valid string.")
-			return "ERR"
-	line = line[:-2] + " "
-	return line
+			err = ["ERR"]
+			return err
+	return liz
 
 
 
@@ -129,7 +130,7 @@ def conditions(select):
 			clone += val + " in "
 			val = raw_input("Enter the matching values, seperate by commas (you don't have to include a comma if there's just the one:\n")
 			liz = []
-			i = val.find(",");
+			i = val.find(",")
 			while i != -1:
 				liz.append(val[:i])
 				val = val[i+1:]
@@ -173,9 +174,12 @@ def search(conn):
 	str = "select "
 	menu(2)
 	val = raw_input()
-	str = process(val,str)
-	print(str)
-	if str != "ERR":
+	liz = process(val,str)
+	if liz[0] != "ERR":
+		for attrib in liz:
+			str += attrib + ", "
+		str = str[:-2] + " "
+		print(str)
 		str += "from sales"
 		str = conditions(str)
 	#cur = conn.cursor()
