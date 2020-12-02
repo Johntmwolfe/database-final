@@ -69,8 +69,102 @@ def process(parser, line):
 		else:
 			print("Not a valid string.")
 			return "ERR"
-	line = line[:-1]
+	line = line[:-2] + " "
 	return line
+
+
+
+def att_grab():
+	print("Which attributes do you want to apply?\n1. Standing (row in the DB)\n2. Name\n3. Platform\n4. Year\n5. Genre\n6. Publisher\n7. North American Sales\n8. European Sales\n9. Japan Sales\na. Other sales\nb.Global sales\nType which you want: ")
+	val = raw_input()
+	if val == "1":
+		return "standing"
+	elif val == "2":
+		return "name"
+	elif val == "3":
+		return "platform"
+	elif val == "4":
+		return "year"
+	elif val == "5":
+		return "genre"
+	elif val == "6":
+		return "publisher"
+	elif val == "7":
+		return "NA_Sales"
+	elif val == "8":
+		return "EU_Sales"
+	elif val == "9":
+		return "JP_Sales"
+	elif val == "a":
+		return "Other_Sales"
+	elif val == "b":
+		return "Global_Sales"
+	else:
+		print("Not an attribute. Pick better next time.")
+		return "ERR"
+
+
+def conditions(select):
+	looped = false
+	clone = select + " where ";
+	menu(3)
+	val = raw_input()
+	while val != "5":
+		looped = true
+		if val == "1":
+			val = att_grab()
+			while val=="ERR":
+				val = att_grab()
+			clone += val + " between "
+			val = raw_input("Enter the between values, seperated by a space: ")
+			split = val.find(" ")
+			first = val[:split]
+			last = val[split+1:]
+			clone += first + " and " + last
+			print(clone)
+		elif val == "2":
+			val = att_grab()
+			while val=="ERR":
+				val = att_grab()
+			clone += val + " in "
+			val = raw_input("Enter the matching values, seperate by commas (you don't have to include a comma if there's just the one:\n")
+			liz = []
+			i = val.find(",");
+			while i != -1:
+				liz.append(val[:i])
+				val = val[i+1:]
+				i = val.find(",")
+			liz.append(val)
+			clone += "("
+			for item in liz:
+				clone += item + ", "
+			clone = clone[:-2] + ")"
+			print(clone)
+		elif val == "3":
+			val = att_grab()
+			while val=="ERR":
+				val = att_grab()
+			clone += val + " like "
+			val = raw_input("Enter the matcher value (it is case sensitive, so be specific): ")
+			clone += "\'%" + val + "%\'"
+			print(clone)
+		elif val == "4":
+			val = att_grab()
+			while val=="ERR":
+				val = att_grab()
+		#elif val == "5":
+		#else:
+		#	print("Invalid response. Try again.")
+		#	return "ERR"
+		time.sleep(.2)
+		menu(4)
+		val = raw_input()
+		if val != 5:	
+			clone += " and "
+	if looped:
+		return clone
+	else:
+		return select
 
 
 
@@ -80,8 +174,10 @@ def search(conn):
 	menu(2)
 	val = raw_input()
 	str = process(val,str)
+	print(str)
 	if str != "ERR":
-		str += " from sales"
+		str += "from sales"
+		str = conditions(str)
 	#cur = conn.cursor()
 	#cur.execute(str)
 
@@ -189,8 +285,9 @@ def menu(int):
 	switcher = {
 		0: "\n\nWelcome to the video game sales database!\nWhat would you like?\nSearch for games (search/s)\nWatch a particular game (watch/w)\nLook through data about games (data/d)\nQuit application (quit/q)\n",
 		1: "\nMultiple games match that search. Can you be more specific?\nChoose a more specific name(n)\nChoose a year(y)\nChoose a genre(g)\nChoose a console of platform(c)\nPrint the games you have so far(p)\n",
-		2: "\nWhich attributes do you want to see?\n1. Standing (row in the DB)\n2. Name\n3. Platform\n4. Year\n5. Genre\n6. Publisher\n7. North American Sales\n8. European Sales\n9. Japan Sales\na. Other sales\nb.Global sales\nType the letters and numbers you want, in the order you want them: "
-		}
+		2: "\nWhich attributes do you want to see?\n1. Standing (row in the DB)\n2. Name\n3. Platform\n4. Year\n5. Genre\n6. Publisher\n7. North American Sales\n8. European Sales\n9. Japan Sales\na. Other sales\nb.Global sales\nType the letters and numbers you want, in the order you want them: ",
+		3: "\nDo you want a certain condition on the data?\n\n1. An attribute value within a certain range\n2. Check if value matches a list of values (genre == \"Platform, Action, or Misc\")\n3. Answer includes a portion of the answer (Name includes \"Bear\")\n4. Include if this column's empty\n5. None of the above\n",
+		4: "\nAny other conditions?\n\n1. An attribute value within a certain range\n2. Check if value matches a list of values (genre == \"Platform, Action, or Misc\")\n3. Answer includes a portion of the answer (Name includes \"Bear\")\n4. Include if this column's empty\n5. None of the above\n"}
 	print switcher.get(int, "ERROR")
 
 
