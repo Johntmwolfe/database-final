@@ -40,16 +40,55 @@ def create_connection(db_file):
 
 
 
+def process(parser, line):
+	while len(parser) > 0:
+		letter = parser[:1]
+		parser = parser[1:]
+		if letter == "1":
+			line += "standing, "
+		elif letter == "2":
+			line += "name, "
+		elif letter == "3":
+			line += "platform, "
+		elif letter == "4":
+			line += "year, "
+		elif letter == "5":
+			line += "genre, "
+		elif letter == "6":
+			line += "publisher, "
+		elif letter == "7":
+			line += "NA_Sales, "
+		elif letter == "8":
+			line += "EU_Sales, "
+		elif letter == "9":
+			line += "JP_Sales, "
+		elif letter == "a":
+			line += "Other_Sales, "
+		elif letter == "b":
+			line += "Global_Sales, "
+		else:
+			print("Not a valid string.")
+			return "ERR"
+	line = line[:-1]
+	return line
+
+
+
 
 def search(conn):
-	str = "select Name from sales limit 10"
-	cur = conn.cursor()
-	cur.execute(str)
+	str = "select "
+	menu(2)
+	val = raw_input()
+	str = process(val,str)
+	if str != "ERR":
+		str += " from sales"
+	#cur = conn.cursor()
+	#cur.execute(str)
 
-	rows = cur.fetchall()
+	#rows = cur.fetchall()
 
-	for row in rows:
-		print(row)
+	#for row in rows:
+	#	print(row)
 """how to select by a certain priority == ("select * from tasks where priority=?", (priority,))"""
 
 
@@ -149,8 +188,9 @@ def data(conn):
 def menu(int):
 	switcher = {
 		0: "\n\nWelcome to the video game sales database!\nWhat would you like?\nSearch for games (search/s)\nWatch a particular game (watch/w)\nLook through data about games (data/d)\nQuit application (quit/q)\n",
-		1: "\nMultiple games match that search. Can you be more specific?\nChoose a more specific name(n)\nChoose a year(y)\nChoose a genre(g)\nChoose a console of platform(c)\nPrint the games you have so far(p)\n"
-	}
+		1: "\nMultiple games match that search. Can you be more specific?\nChoose a more specific name(n)\nChoose a year(y)\nChoose a genre(g)\nChoose a console of platform(c)\nPrint the games you have so far(p)\n",
+		2: "\nWhich attributes do you want to see?\n1. Standing (row in the DB)\n2. Name\n3. Platform\n4. Year\n5. Genre\n6. Publisher\n7. North American Sales\n8. European Sales\n9. Japan Sales\na. Other sales\nb.Global sales\nType the letters and numbers you want, in the order you want them: "
+		}
 	print switcher.get(int, "ERROR")
 
 
