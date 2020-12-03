@@ -29,6 +29,37 @@ order of operations:
 	select from where group having order limit
 """
 
+
+
+
+'''	
+Main function, drives the program
+'''
+def main():
+	random.seed()								#seed used for the watch function
+	conn = create_connection("proj.db")			#connect to the database
+	with conn: 
+		menu(0)									#output initial menu
+		val = raw_input()
+		while val != "q" and val != "quit":
+			if val == "s" or val == "search":
+				search(conn)					#search through the database, sql style
+			elif val == "w" or val == "watch":
+				watch(conn)						#pull up a twitch stream of the game
+			elif val == "d" or val == "data":
+				data(conn)						#look at the data in a visualized format
+			time.sleep(.5)
+			menu(0)
+			val = raw_input()					#loop
+		print("Have a great day!")
+
+
+
+
+
+'''
+creates the initial connection with the database
+'''
 def create_connection(db_file):
 	conn = None
 	try:
@@ -40,13 +71,79 @@ def create_connection(db_file):
 
 
 
+
+'''
+search function. Let's the user create a sqlite 
+search, querying the user so they can create a
+query on their own.
+'''
+def search(conn):
+	str = "select "
+	print("\nWhich attributes to you want to use?\n")
+	menu(2)						#Takes a string representing all the columns they want
+	val = raw_input()			#take that string in
+	liz = process(val)			#process the string, turning it into a list of attributes
+	if liz[0] != "ERR":		#If they made a valid string...
+		if liz[0] == "*":	#If they included all of it...
+			str += "* "
+		else:								#NOT all of it
+			for attrib in liz:				#for each item in the list...
+				str += attrib + ", "		#...add it to the select operation
+			str = str[:-2] + " "			#cut off the end that has the comma
+		str += "from sales"				#add the database
+		
+		#condition operation
+		str = conditions(str, False)	#compile the conditions the user wants
+
+		#group operation
+		val = raw_input("Do you want the group the output to a certain attribute? \n(yes/no): ")
+		if val == "yes" or val == "y":
+			print("Which attribute?\n")
+			val = att_grab()					#att_grab() grabs a single column
+			str += "group by " + val + " "
+
+			#having operation
+			val = raw_input("Do you want to have a condition for these groupings?\n(yes/no): ")
+			if val == "yes" or val == "y":
+				str = conditions(str,True)	#adds only one conditional (true prevents looping)
+
+		#order by operation
+		val = raw_input("Do you want the output sorted?\n(y/n): ")
+		if val == "yes" or val == "y":
+			str += " order by"
+			str = order(str)				#loops for how many orders the user wants
+
+		#limit operation
+		val = raw_input("Do you want a limit to the return values? (y/n): ")
+		if val == "yes" or val == "y":
+			val = raw_input("Limit by how many?: ")		#how many rows does the user want (at max)
+			str += " limit " + val
+		
+		#try the string
+		cur = conn.cursor()		#make a cursor object to step through the database
+		#print(str)
+		cur.execute(str)		#perform the select operations
+
+		rows = cur.fetchall()	#make a list of all the rows selecteed
+
+		for row in rows:		
+			print(row)			#print all the rows
+
+
+
+
+'''
+Process a line, which is a string of numbers and letters, 
+that represents a list of attributes the user wants. The
+list is created here, then returned.
+'''
 def process(parser):
-	liz = []
-	while len(parser) > 0:
-		letter = parser[:1]
-		parser = parser[1:]
-		if letter == "1":
-			liz.append("standing")
+	liz = []						#empty list
+	while len(parser) > 0:			#while there's more of the string to parse
+		letter = parser[:1]			#grab a single letter
+		parser = parser[1:]			#cut it off the rest of the list
+		if letter == "1":			
+			liz.append("standing")	#push the item onto the list per the encoding 
 		elif letter == "2":
 			liz.append("name")
 		elif letter == "3":
@@ -67,23 +164,139 @@ def process(parser):
 			liz.append("Other_Sales")
 		elif letter == "b":
 			liz.append("Global_Sales")
-		elif letter == "*":
-			liz.append("*")
-		else:
+		elif letter == "*":				#if they asked for all of them...
+			liz.append("*")				#...add an encoding for every item
+		else:								#error value
 			print("Not a valid string.")
-			err = ["ERR"]
-			return err
+			err = ["ERR"]					#push on error code
+			return err						#quick return the error
 	return liz
 
 
 
+
+'''
+Create a long list of conditionals. Or just one,
+depending on the single bool
+'''
+def conditions(select, single):
+	looped = False				#bool to see if we've entered the loop or not
+	clone = select
+	if not single:			#if we're not just going through once...	
+		clone += " where "	#add the where
+
+	print("\nDo you want a certain condition on the data?\n")
+	menu(3)						#conditional menus
+	val = raw_input()
+	while val != "6":			#while we haven't exited
+		looped = True			#we looped!
+
+		#range measure
+		if val == "1":
+			val = att_grab()				#grab the attribute they want
+			clone += val + " between "		#select encoding
+			val = raw_input("Enter the between values, seperated by a space: ")
+			split = val.find(" ")			#find space between the range
+			first = val[:split]				#first one
+			last = val[split+1:]			#second one
+			clone += first + " and " + last	#add encoding
+
+		#exact match measure
+		elif val == "2":
+			val = att_grab()							#grab attribute
+			clone += val + " in "						#match encoding
+			val = raw_input("Enter the matching values, seperate by commas (you don't have to include a comma if there's just the one:\n")
+			liz = []									#user gives a string of values to match, seperated by commas
+			i = val.find(",")							#find item
+			while i != -1:					#while there's more to find...
+				liz.append(val[:i])			#add that item to the list
+				val = val[i+1:]				#remove item from the string
+				i = val.find(",")			#look for the next item
+			liz.append(val)								#there's an item past the final comma, so it needs to be added
+			clone += "("								#begin the list encoding
+			for item in liz:
+				clone +=  "\"" + item.strip() + "\", "	#add the list
+			clone = clone[:-2] + ")"					#remove the ", from the end, close the parenthesis
+
+		#search for a substring
+		elif val == "3":
+			val = att_grab()				#grab an attribute
+			clone += val + " like "			#add substring encoding
+			val = raw_input("Enter the matcher value (it is case sensitive, so be specific): ")
+			clone += "\'%" + val + "%\'"	#add the searcher value
+
+		#NULL checker
+		elif val == "4":
+			print("\nWhich attributes do you want to check?")
+			menu(2)						#take a list of attributes
+			val = raw_input()
+			liz = process(val)			#make a list of those attributes
+			while liz[0]=="ERR":
+				menu(2)					#if they gave you a bad value, make them do it again
+				val = raw_input()
+				liz = process(val)
+			clone += "("				#beginning of NULL encoding
+			for item in liz:
+				clone += item + " | "	#adding multiple values
+			clone = clone[:-3] + ")"	#remove " | " and close the list
+			val = raw_input("Are you wanting to check if this is NULL, or filled?\n1. NULL\n2. Not NULL\n")
+			while val != "1" and val != "2":	#if they didnt give you a valid string, make them give you a valid one
+				val = raw_input("Are you wanting to check if this is NULL, or filled?\n1. NULL\n2. Not NULL\n")
+			if val == "1":
+				clone += " is NULL"
+			else:
+				clone += " is not NULL"
+
+		#regular math comparisons
+		elif val == "5":
+			val = att_grab()								#grab attribute for comparisons
+			clone += " " + val
+			menu(4)											#query them on which math operator they're using (< | <= | > | >= | != | =)
+			val = raw_input()
+			while int(val) > 6 or int(val) < 1:				#if they didn't give you a valid value, make them
+				menu(4)
+				val = raw_input()
+			comparator = raw_input("Comparator value (the number or value you're comparing to): ")
+			if val == "1":
+				clone += " > " + comparator					#add the various math comparisons
+			elif val == "2":
+				clone += " >= " + comparator
+			elif val == "3":
+				clone += " < " + comparator
+			elif val == "4":
+				clone += " <= " + comparator
+			elif val == "5":
+				clone += " = " + comparator
+			else:
+				clone += " != " + comparator
+		
+		
+		if (single):				#if we're not supposed to loop after this
+			val = "6"				#force the user to quit
+		else:					#if they can loop...
+			print("\nAny other conditions?\n")
+			menu(3)					
+			val = raw_input()	#ask them for more comparisons
+			if val != "6":	
+				clone += " and "
+	if looped:					#if we actually added a conditional..
+		return clone			#send it back
+	else:
+		return select			#otherwise, no work was done here. Send back the old.
+
+
+
+
+'''
+Asks the user to select an attribute, and sends it back
+'''
 def att_grab():
 	print("Which attribute do you want to use?\n1. Standing (row in the DB)\n2. Name\n3. Platform\n4. Year\n5. Genre\n6. Publisher\n7. North American Sales\n8. European Sales\n9. Japan Sales\na. Other sales\nb.Global sales\nType which you want: ")
-	val = raw_input()
-	if val == "1":
-		return "standing"
-	elif val == "2":
-		return "name"
+	val = raw_input()			
+	if val == "1":				#pretty basic stuff, honestly. The
+		return "standing"		#user inputs a value, and if its 
+	elif val == "2":			#valid, the corresponding attribute
+		return "name"			#is returned
 	elif val == "3":
 		return "platform"
 	elif val == "4":
@@ -104,190 +317,87 @@ def att_grab():
 		return "Global_Sales"
 	else:
 		print("Not an attribute. Pick better next time.")
-		return att_grab()
+		return att_grab()	#recursively make them return a valid attribute
 
 
-
-
-
-
-
-def conditions(select, single):
-	looped = False
-	clone = select + " where ";
-	menu(3)
-	val = raw_input()
-	while val != "6":
-		looped = True
-		if val == "1":
-			val = att_grab()
-			while val=="ERR":
-				val = att_grab()
-			clone += val + " between "
-			val = raw_input("Enter the between values, seperated by a space: ")
-			split = val.find(" ")
-			first = val[:split]
-			last = val[split+1:]
-			clone += first + " and " + last
-		elif val == "2":
-			val = att_grab()
-			while val=="ERR":
-				val = att_grab()
-			clone += val + " in "
-			val = raw_input("Enter the matching values, seperate by commas (you don't have to include a comma if there's just the one:\n")
-			liz = []
-			i = val.find(",")
-			while i != -1:
-				liz.append(val[:i])
-				val = val[i+1:]
-				i = val.find(",")
-			liz.append(val)
-			clone += "("
-			for item in liz:
-				clone +=  "\"" + item.strip() + "\", "
-			clone = clone[:-2] + ")"
-		elif val == "3":
-			val = att_grab()
-			while val=="ERR":
-				val = att_grab()
-			clone += val + " like "
-			val = raw_input("Enter the matcher value (it is case sensitive, so be specific): ")
-			clone += "\'%" + val + "%\'"
-		elif val == "4":
-			menu(5)
-			val = raw_input()
-			liz = process(val)
-			while liz[0]=="ERR":
-				menu(5)
-				val = raw_input()
-				liz = process(val)
-			clone += "("
-			for item in liz:
-				clone += item + " | "
-			clone = clone[:-3] + ")"
-			val = raw_input("Are you wanting to check if this is NULL, or filled?\n1. NULL\n2. Not NULL\n")
-			while val != "1" and val != "2":
-				val = raw_input("Are you wanting to check if this is NULL, or filled?\n1. NULL\n2. Not NULL\n")
-			if val == "1":
-				clone += " is NULL"
-			else:
-				clone += " is not NULL"
-		elif val == "5":
-			val = att_grab()
-			clone += " " + val
-			menu(6)
-			val = raw_input()
-			while int(val) > 6 or int(val) < 1:
-				menu(6)
-				val = raw_input()
-			comparator = raw_input("Comparator value: ")
-			if val == "1":
-				clone += " > " + comparator
-			elif val == "2":
-				clone += " >= " + comparator
-			elif val == "3":
-				clone += " < " + comparator
-			elif val == "4":
-				clone += " <= " + comparator
-			elif val == "5":
-				clone += " = " + comparator
-			else:
-				clone += " != " + comparator
-		time.sleep(.2)
-		if (single):
-			val = "6";
-		else:
-			menu(4)
-			val = raw_input()
-			if val != "6":	
-				clone += " and "
-	if looped:
-		return clone
-	else:
-		return select
-
-
-
+'''
+Makes the encoding for the ordering operation
+'''
 def order(line):
-	#print(up_down[:1])
 	val = ""
-	while val != "no" and val != "n":
-		val = att_grab()
-		up_down = raw_input("Order by ascending or descending? (asc/desc): ")
+	while val != "no" and val != "n":											#while the user isn't done...
+		val = att_grab()														#grab an attribute
+		up_down = raw_input("Order by ascending or descending? (asc/desc): ")	#do the want the attribute in ascending or descending order?
 		if up_down == "a" or up_down == "asc":
-			line += " " + val + " asc,"
+			line += " " + val + " asc,"											#ascending encoding
 		elif up_down == "d" or up_down == "desc":
-			line += " " + val + " desc,"
+			line += " " + val + " desc,"										#descending encoding
 		else:
 			print("Try again, idiot.")
-		val = raw_input("Want to sort further? (yes/no): ")
-	return line[:-1]
+		val = raw_input("Want to sort further? (yes/no): ")						#ask if they want more
+	return line[:-1]															#return the line, without the final comma
 
 
 
-def search(conn):
-	str = "select "
-	menu(2)
-	val = raw_input()
-	liz = process(val)
-	if liz[0] != "ERR":
-		if liz[0] == "*":
-			print
-			str += "* "
-		else:
-			for attrib in liz:
-				str += attrib + ", "
-			str = str[:-2] + " "
-		print(str)
-		str += "from sales"
-		str = conditions(str, False)
-		print(str)
-		val = raw_input("Do you want the group the output to a certain attribute? \n(yes/no): ")
-		if val == "yes" or val == "y":
-			print("Which attribute?\n")
-			val = att_grab()
-			str += "group by " + val + " "
-			val = raw_input("Do you want to have a condition for these groupings?\n(yes/no): ")
-			if val == "yes" or val == "y":
-				str = conditions(str,True)
-				print(str)
-		val = raw_input("Do you want the output sorted?\n(y/n): ")
-		if val == "yes" or val == "y":
-			str += " order by"
-			str = order(str)
-			print(str)
-		val = raw_input("Do you want a limit to the return values? (y/n): ")
-		if val == "yes" or val == "y":
-			val = raw_input("Limit by how many?: ")
-			str += " limit " + val
-			print(str)
-		cur = conn.cursor()
-		print(str)
-		cur.execute(str)
 
-		rows = cur.fetchall()
+'''
+Watch function! Sends the user to twitch.tv when
+they find a game they want to watch
+'''
+def watch(conn):
+	line = "https://twitch.tv/directory/game/"											#base URL
+	val = raw_input("Looking for a specific game, or something new? (specific/new)\n")	#ask the user if they want new, or something specific
+	curr = conn.cursor()															#cursor for searching
 
-		for row in rows:
-			print(row)
+	#specific
+	if val == "specific" or val == "s":
+		val = raw_input("Type of the name of the game in (case-sensitive): ")		#get the specific value
+		search = "select name, platform, year, genre from sales where name like '%" + val + "%'"
+		curr.execute(search)														#search for the specific value
+
+		rows = curr.fetchall()			#grab every game that fits
+		while len(rows) > 1:			#if there's more than one...			
+			rows = reduce(rows)			#reduce the amount of rows
+			time.sleep(.2)
+
+			line += row[0][0]
+
+	#new
+	elif val == "new" or val == "n":			
+		curr.execute("select name from sales where year > '2015'")	#find all games from 2016-forward
+
+		rows = curr.fetchall()						#grab all games
+		x = random.randrange(0,len(rows))			#get a random one
+		line += rows[x][0]
+
+	webbrowser.open(line)							#go to that page on twitch!
 
 
 
+
+'''
+Reduces a larger list of games until only one remains, then returns that value
+'''
 def reduce(lizt):
 	#[0] == name, [1] == platform, [2] == year, [3] == genre
-	clone = []
+	clone = []				
 	for row in lizt:
-		clone.append(row)
+		clone.append(row)		#copy the original list
 	menu(1)
-	val = raw_input()
+	val = raw_input()			#see how the user wants to further remove rows
+	
+	#year
 	if val == "y":
 		val = raw_input("Type in a year: ")
 		i = 0
-		while i < len(clone):
-			if clone[i][2] == val:
-				i += 1
+		while i < len(clone):		#step through the list
+			if clone[i][2] == val:	#if the year value matches their year...
+				i += 1				#it can stay
 			else:
-				clone.pop(i)
-	elif val == "g":
+				clone.pop(i)		#lest, we DESTROY IT
+	
+	#genre
+	elif val == "g":							#the other cases function much the same as the year case
 		val = raw_input("Type in the genre: ")
 		i = 0
 		while i < len(clone):
@@ -295,6 +405,8 @@ def reduce(lizt):
 				i += 1
 			else:
 				clone.pop(i)
+
+	#platform
 	elif val == "c":
 		val = raw_input("Type in a console: ")
 		i = 0
@@ -303,12 +415,8 @@ def reduce(lizt):
 				i+= 1
 			else:
 				clone.pop(i)
-	elif val == "p":
-		x = 1;
-		for row in lizt:
-			print(str(x) + ": ")
-			print(row)
-			x += 1
+
+	#name case
 	elif val == "n":
 		val = raw_input("Type in a title: ")
 		i = 0
@@ -317,86 +425,101 @@ def reduce(lizt):
 				i += 1
 			else:
 				clone.pop(i)
+
+	#This isn't a destroy case: this prints off all the games so far allowed by the search so far
+	elif val == "p":
+		x = 1
+		for row in lizt:			#for every row...
+			print(str(x) + ": ")	#the number of this row
+			print(row)				#the row itself
+			x += 1
+	
 	else:
 		print("Not valid, asshole.")
 
-
+	#after they do the reduction, check if they accidentally got rid of everything. 
 	if len(clone) == 0:
-		print("No games matched that search. Try again?\n")
-		return lizt
-	else:
-		return clone;
+		print("No games matched that search. Try again?\n")	#let them know they goofed
+		return lizt											#return original list
+	else:				#if they DIDN'T reduce to nothing..
+		return clone	#return their good work!
 
 
 
 
-def watch(conn):
-	line = "https://twitch.tv/directory/game/"
-	val = raw_input("Looking for a specific game, or something new? (specific/new)\n")
-	curr = conn.cursor()
-	if val == "specific" or val == "s":
-		val = raw_input("Type of the name of the game in: ")
-		search = "select name, platform, year, genre from sales where name like '%" + val + "%'"
-		curr.execute(search)
-
-		rows = curr.fetchall()
-		while len(rows) > 1:
-			rows = reduce(rows)
-			time.sleep(.2)
-
-		for row in rows:
-			line += row[0]
-	elif val == "new" or val == "n":
-		curr.execute("select name from sales where year > '2015'")
-
-		rows = curr.fetchall()
-		x = random.randrange(0,len(rows))
-		line += rows[x][0]
-
-	webbrowser.open(line)
-
-
-
-
+'''
+The data one... I dunno matplotlib
+'''
 def data(conn):
 	print("I dunno how matplotlib works!!")
 
 
 
 
+'''
+A place to store the large ass strings. These are 
+all various menus used within the program
+'''
 def menu(int):
 	switcher = {
 		0: "\n\nWelcome to the video game sales database!\nWhat would you like?\nSearch for games (search/s)\nWatch a particular game (watch/w)\nLook through data about games (data/d)\nQuit application (quit/q)\n",
+		'''
+		Welcome to the video game sales database!
+		What would you like?
+		Search for games (search/s)
+		Watch a particular game (watch/w)
+		Look through data about games (data/d)
+		Quit application (quit/q)
+		'''
+		
 		1: "\nMultiple games match that search. Can you be more specific?\nChoose a more specific name(n)\nChoose a year(y)\nChoose a genre(g)\nChoose a console of platform(c)\nPrint the games you have so far(p)\n",
-		2: "\nWhich attributes do you want to see?\n1. Standing (row in the DB)\n2. Name\n3. Platform\n4. Year\n5. Genre\n6. Publisher\n7. North American Sales\n8. European Sales\n9. Japan Sales\na. Other sales\nb.Global sales\nType the letters and numbers you want, in the order you want them.\nSearch(if you want them all, put a *): ",
-		3: "\nDo you want a certain condition on the data?\n\n1. An attribute value within a certain range\n2. Check if value matches a list of values (genre == \"Platform, Action, or Misc\")\n3. Answer includes a portion of the answer (Name includes \"Bear\")\n4. Include if this column's empty\n5. A mathematical comparison(less than, greater than, equal to)\n6. None of the above\n",
-		4: "\nAny other conditions?\n\n1. An attribute value within a certain range\n2. Check if value matches a list of values (genre == \"Platform, Action, or Misc\")\n3. Answer includes a portion of the answer (Name includes \"Bear\")\n4. Include if this column's empty\n5. A mathematical comparison(less than, greater than, equal to)\n6. None of the above\n",
-		5: "\nWhich attributes do you want to check?\n1. Standing (row in the DB)\n2. Name\n3. Platform\n4. Year\n5. Genre\n6. Publisher\n7. North American Sales\n8. European Sales\n9. Japan Sales\na. Other sales\nb.Global sales\nType the letters and numbers you want, in the order you want them: ",
-		6: "\nWhich conditional?\n1. >\n2. >=\n3. <\n4. <=\n5. =\n6. !=\n"
+		'''
+		Multiple games match that search. Can you be more specific?
+		Choose a more specific name(n)
+		Choose a year(y)
+		Choose a genre(g)
+		Choose a console of platform(c)
+		Print the games you have so far(p)
+		'''
+
+		2: "1. Standing (row in the DB)\n2. Name\n3. Platform\n4. Year\n5. Genre\n6. Publisher\n7. North American Sales\n8. European Sales\n9. Japan Sales\na. Other sales\nb.Global sales\nType the letters and numbers you want, in the order you want them.\nSearch(if you want them all, put a *): ",
+		'''
+		1. Standing (row in the DB)
+		2. Name
+		3. Platform
+		4. Year
+		5. Genre
+		6. Publisher
+		7. North American Sales
+		8. European Sales
+		9. Japan Sales
+		a. Other sales
+		b.Global sales
+		Type the letters and numbers you want, in the order you want them.\nSearch(if you want them all, put a *): ",
+		'''
+
+		3: "\n1. An attribute value within a certain range\n2. Check if value matches a list of values (genre == \"Platform, Action, or Misc\")\n3. Answer includes a portion of the answer (Name includes \"Bear\")\n4. Include if this column's empty\n5. A mathematical comparison(less than, greater than, equal to)\n6. None of the above\n",
+		'''
+		1. An attribute value within a certain range
+		2. Check if value matches a list of values (genre == \"Platform, Action, or Misc\")
+		3. Answer includes a portion of the answer (Name includes \"Bear\")
+		4. Include if this column's empty
+		5. A mathematical comparison(less than, greater than, equal to)
+		6. None of the above
+		'''
+
+		4: "\nWhich conditional?\n1. >\n2. >=\n3. <\n4. <=\n5. =\n6. !=\n"
+		'''
+		Which conditional?
+		1. >
+		2. >=
+		3. <
+		4. <=
+		5. =
+		6. !=
+		'''
 		}
 	print switcher.get(int, "ERROR")
-
-
-
-
-def main():
-	random.seed()
-	conn = create_connection("proj.db")
-	with conn: 
-		menu(0)
-		val = raw_input()
-		while val != "q" and val != "quit":
-			if val == "s" or val == "search":
-				search(conn)
-			elif val == "w" or val == "watch":
-				watch(conn)
-			elif val == "d" or val == "data":
-				data(conn)
-			time.sleep(.5)
-			menu(0)
-			val = raw_input()
-		print("Have a great day!")
-		#webbrowser.open("https://twitch.tv")
 
 
 
