@@ -1,9 +1,11 @@
 import time
 import random
 import sqlite3
+import math
 import webbrowser
 import matplotlib.pyplot as plt
 from sqlite3 import Error
+from tabulate import tabulate
 """
 information below is summarized on sqlitetutorial.net
 
@@ -42,13 +44,14 @@ def main():
 	with conn: 
 		menu(0)								#output initial menu
 		val = input()
+		print(val)
 		while val != "q" and val != "quit":
 			if val == "s" or val == "search":
 				search(conn)					#search through the database, sql style
 			elif val == "w" or val == "watch":
 				watch(conn)						#pull up a twitch stream of the game
 			elif val == "d" or val == "data":
-				data()							#look at the data in a visualized format
+				data(conn)							#look at the data in a visualized format
 			time.sleep(.5)
 			menu(0)
 			val = input()					#loop
@@ -127,8 +130,75 @@ def search(conn):
 
 		rows = cur.fetchall()	#make a list of all the rows selecteed
 
-		for row in rows:		
-			print(row)			#print all the rows
+		if len(rows) > 50:
+			pages(rows, liz)
+		else:
+			for row in rows:		
+				print(row)			#print all the rows
+
+
+
+
+'''
+Print out many rows in a more standardized format.
+User can tab back and forth through the rows as they choose
+'''
+def pages(rows, lizt):
+	page = 0
+	last = math.ceil(len(rows)/50)
+	while True:
+		table = []
+		header = []
+		print("*******************************************************")
+		print("Page " + str(page + 1) + " of " +  str(last))
+		x = 0
+		print("#", end = "\t")
+		while x < len(lizt):
+			if lizt[x] == "*":
+				header.append("Standing")
+				header.append("Name")
+				header.append("Platform")
+				header.append("Year")
+				header.append("Genre")
+				header.append("Publisher")
+				header.append("NA_Sales")
+				header.append("EU_Sales")
+				header.append("JP_Sales")
+				header.append("Other_Sales")
+				header.append("Global_Sales")
+			else:
+				header.append(item)
+			x += 1
+		x = 0
+		while x < 50:
+			place = 50 * page + x
+			if place >= len(rows):
+				break;
+			else:
+				table.append(rows[place])
+			x += 1
+		print(tabulate(table, headers = header))
+		print("****************************************************")
+		print("(f)irst\t\t(p)revious\t\tPage" + str(page+1) + " of " + str(last) + "\t\t(n)ext\t\t(l)ast")
+		val = input("Or (q)uit")
+		if val == "f":
+			page = 0
+		elif val == "p":
+			page -= 1
+			if page < 0:
+				page = 0
+		elif val == "n":
+			page += 1
+			if page > last:
+				page = last
+		elif val == "l":
+			page = last
+		elif val == "q":
+			break;
+		else:
+			print("Not a valid string")
+
+
 
 
 
@@ -144,17 +214,17 @@ def process(parser):
 		letter = parser[:1]			#grab a single letter
 		parser = parser[1:]			#cut it off the rest of the list
 		if letter == "1":			
-			liz.append("standing")	#push the item onto the list per the encoding 
+			liz.append("Standing")	#push the item onto the list per the encoding 
 		elif letter == "2":
-			liz.append("name")
+			liz.append("Name")
 		elif letter == "3":
-			liz.append("platform")
+			liz.append("Platform")
 		elif letter == "4":
-			liz.append("year")
+			liz.append("Year")
 		elif letter == "5":
-			liz.append("genre")
+			liz.append("Genre")
 		elif letter == "6":
-			liz.append("publisher")
+			liz.append("Publisher")
 		elif letter == "7":
 			liz.append("NA_Sales")
 		elif letter == "8":
@@ -295,17 +365,17 @@ def att_grab():
 	print("Which attribute do you want to use?\n1. Standing (row in the DB)\n2. Name\n3. Platform\n4. Year\n5. Genre\n6. Publisher\n7. North American Sales\n8. European Sales\n9. Japan Sales\na. Other sales\nb.Global sales\nType which you want: ")
 	val = input()			
 	if val == "1":				#pretty basic stuff, honestly. The
-		return "standing"		#user inputs a value, and if its 
+		return "Standing"		#user inputs a value, and if its 
 	elif val == "2":			#valid, the corresponding attribute
-		return "name"			#is returned
+		return "Name"			#is returned
 	elif val == "3":
-		return "platform"
+		return "Platform"
 	elif val == "4":
-		return "year"
+		return "Year"
 	elif val == "5":
-		return "genre"
+		return "Genre"
 	elif val == "6":
-		return "publisher"
+		return "Publisher"
 	elif val == "7":
 		return "NA_Sales"
 	elif val == "8":
@@ -429,11 +499,14 @@ def reduce(lizt):
 
 	#This isn't a destroy case: this prints off all the games so far allowed by the search so far
 	elif val == "p":
-		x = 1
-		for row in lizt:			#for every row...
-			print(str(x) + ": ")	#the number of this row
-			print(row)				#the row itself
-			x += 1
+		if len(lizt) > 50:
+			pages(lizt, ["Name","Platform","Year","Genre"])
+		else:
+			x = 1
+			for row in lizt:			#for every row...
+				print(str(x) + ": ")	#the number of this row
+				print(row)				#the row itself
+				x += 1
 	
 	else:
 		print("Not valid, asshole.")
@@ -462,61 +535,61 @@ all various menus used within the program
 def menu(int):
 	switcher = {
 		0: 
-		'''
-		Welcome to the video game sales database!
-		What would you like?
-		Search for games (search/s)
-		Watch a particular game (watch/w)
-		Look through data about games (data/d)
-		Quit application (quit/q)
+'''
+Welcome to the video game sales database!
+What would you like?
+Search for games (search/s)
+Watch a particular game (watch/w)
+Look through data about games (data/d)
+Quit application (quit/q)
 		''',
 		
 		1: 
-		'''
-		Multiple games match that search. Can you be more specific?
-		Choose a more specific name(n)
-		Choose a year(y)
-		Choose a genre(g)
-		Choose a console of platform(c)
-		Print the games you have so far(p)
-		''',
+'''
+Multiple games match that search. Can you be more specific?
+Choose a more specific name(n)
+Choose a year(y)
+Choose a genre(g)
+Choose a console of platform(c)
+Print the games you have so far(p)
+''',
 
 		2: 
-		'''
-		1. Standing (row in the DB)
-		2. Name
-		3. Platform
-		4. Year
-		5. Genre
-		6. Publisher
-		7. North American Sales
-		8. European Sales
-		9. Japan Sales
-		a. Other sales
-		b.Global sales
-		Type the letters and numbers you want, in the order you want them.\nSearch(if you want them all, put a *): ",
-		''',
+'''
+1. Standing (row in the DB)
+2. Name
+3. Platform
+4. Year
+5. Genre
+6. Publisher
+7. North American Sales
+8. European Sales
+9. Japan Sales
+a. Other sales
+b.Global sales
+Type the letters and numbers you want, in the order you want them.\nSearch(if you want them all, put a *): ",
+''',
 
 		3: 
-		'''
-		1. An attribute value within a certain range
-		2. Check if value matches a list of values (genre == \"Platform, Action, or Misc\")
-		3. Answer includes a portion of the answer (Name includes \"Bear\")
-		4. Include if this column's empty
-		5. A mathematical comparison(less than, greater than, equal to)
-		6. None of the above
-		''',
+'''
+1. An attribute value within a certain range
+2. Check if value matches a list of values (genre == \"Platform, Action, or Misc\")
+3. Answer includes a portion of the answer (Name includes \"Bear\")
+4. Include if this column's empty
+5. A mathematical comparison(less than, greater than, equal to)
+6. None of the above
+''',
 
 		4:
-		'''
-		Which conditional?
-		1. >
-		2. >=
-		3. <
-		4. <=
-		5. =
-		6. !=
-		'''
+'''
+Which conditional?
+1. >
+2. >=
+3. <
+4. <=
+5. =
+6. !=
+'''
 	}
 	print(switcher.get(int, "ERROR"))
 	#print switcher.get(int, "ERROR")
