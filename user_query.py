@@ -3,6 +3,8 @@ import random
 import sqlite3
 import math
 import webbrowser
+from databases import Database
+#import charts
 import matplotlib.pyplot as plt
 from sqlite3 import Error
 from tabulate import tabulate
@@ -519,14 +521,26 @@ def reduce(lizt):
 		return clone	#return their good work!
 
 
+def get_Sales(conn):
+	with conn:
+		NA_Sales = "SELECT NA_Sales, EU_Sales, JP_Sales, Other_Sales, Global_Sales FROM sales WHERE Name = 'Wii Sports';"
+		return conn.execute(NA_Sales).fetchone()
 
+def bar_sales(sales):
+	x = ["North America", "Europe", "Japan", "Others", "Global"]
+	h = [float(sales[0]), float(sales[1]), float(sales[2]), float(sales[3]), float(sales[4])]
+	c = ["darkred", "orangered", "darkgreen", "navy", "darkviolet"]
+	plt.bar(x, h, color=c)
+	plt.xlabel("Sales in regions")
+	plt.ylabel("Sales in millions")
+	plt.title("Sales for Wii Sports")
+	plt.show()
 
-'''
-The data one... I dunno matplotlib
-'''
-
+# Prints a matplotlib bar chart of sales from all parts of the world.
 def data(conn):
-	print("I don't know matplotlib :(")
+	print("Which video game do you want to see for sales data?")
+	all_sales = get_Sales(conn)
+	bar_sales(all_sales)
 
 '''
 A place to store the large ass strings. These are 
@@ -540,7 +554,7 @@ Welcome to the video game sales database!
 What would you like?
 Search for games (search/s)
 Watch a particular game (watch/w)
-Look through data about games (data/d)
+Look through sales data about games (data/d)
 Quit application (quit/q)
 		''',
 		
