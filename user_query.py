@@ -3,7 +3,7 @@ import random
 import sqlite3
 import math
 import webbrowser
-from databases import Database
+#from databases import Database
 #import charts
 import matplotlib.pyplot as plt
 from sqlite3 import Error
@@ -42,7 +42,7 @@ Main function, drives the program
 '''
 def main():
 	random.seed()								#seed used for the watch function
-	conn = create_connection("proj.db")			#connect to the database
+	conn = create_connection("vgsales.db")			#connect to the database
 	with conn: 
 		menu(0)								#output initial menu
 		val = input()
@@ -520,27 +520,31 @@ def reduce(lizt):
 	else:				#if they DIDN'T reduce to nothing..
 		return clone	#return their good work!
 
-
-def get_Sales(conn):
+# Gets the sales information from the database
+def get_Sales(game_name, conn):
 	with conn:
-		NA_Sales = "SELECT NA_Sales, EU_Sales, JP_Sales, Other_Sales, Global_Sales FROM sales WHERE Name = 'Wii Sports';"
-		return conn.execute(NA_Sales).fetchone()
+		NA_Sales = "SELECT NA_Sales, EU_Sales, JP_Sales, Other_Sales, Global_Sales FROM sales WHERE Name = ?;"
+		return conn.execute(NA_Sales, (game_name,)).fetchone()
 
-def bar_sales(sales):
+# Creates the bar diagram for the sales from each region
+def bar_sales(game_name, all_sales):
 	x = ["North America", "Europe", "Japan", "Others", "Global"]
-	h = [float(sales[0]), float(sales[1]), float(sales[2]), float(sales[3]), float(sales[4])]
+	h = []
+	for index in all_sales:
+		h.append(index)
 	c = ["darkred", "orangered", "darkgreen", "navy", "darkviolet"]
 	plt.bar(x, h, color=c)
 	plt.xlabel("Sales in regions")
 	plt.ylabel("Sales in millions")
-	plt.title("Sales for Wii Sports")
+	plt.title("Sales for the video game: " + game_name)
 	plt.show()
 
 # Prints a matplotlib bar chart of sales from all parts of the world.
 def data(conn):
-	print("Which video game do you want to see for sales data?")
-	all_sales = get_Sales(conn)
-	bar_sales(all_sales)
+	print("Which video game would you like to see for sales data?")
+	game_name = input()
+	all_sales = get_Sales(game_name, conn)
+	bar_sales(game_name, all_sales)
 
 '''
 A place to store the large ass strings. These are 
