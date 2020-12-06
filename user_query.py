@@ -4,8 +4,10 @@ import sqlite3
 import math
 import webbrowser
 import matplotlib.pyplot as plt
+plt.rcParams.update({'figure.max_open_warning': 0})
 from sqlite3 import Error
 from tabulate import tabulate
+import numpy as np 
 """
 information below is summarized on sqlitetutorial.net
 
@@ -51,7 +53,7 @@ def main():
 			elif val == "w" or val == "watch":
 				watch(conn)						#pull up a twitch stream of the game
 			elif val == "d" or val == "data":
-				data(conn)							#look at the data in a visualized format
+				data_menu(conn)							#look at the data in a visualized format
 			time.sleep(.5)
 			menu(0)
 			val = input()					#loop
@@ -167,7 +169,7 @@ def pages(rows, lizt):
 				header.append("Other_Sales")
 				header.append("Global_Sales")
 			else:
-				header.append(item)
+				header.append(lizt[x])
 			x += 1
 		x = 0
 		while x < 50:
@@ -431,7 +433,7 @@ def watch(conn):
 			rows = reduce(rows)			#reduce the amount of rows
 			time.sleep(.2)
 
-			line += row[0][0]
+			line += rows[0][0]
 
 	#new
 	elif val == "new" or val == "n":			
@@ -544,8 +546,29 @@ def data(conn):
 	all_sales = get_Sales(game_name, conn)
 	bar_sales(game_name, all_sales)
 
+def data_menu(conn):
+    print("Welcome to the data section!")
+    print("Would you like to see sales data about games? (yes: sales/ no: choose another option in list)")
+    print("Would you like to see a pie chart showing the most common genres? (yes: pie/no: choose another option in list)")
+    print("Quit? (Q/q) ")
+    val = input()
+    while val != "Q" and val != "q" and val != "quit" and val != "Quit":
+        if val == "sales" or val == "Sales":
+            data(conn)
+        elif val == "pie" or val == "Pie":
+            data2(conn)
+        time.sleep(.5)
+        menu(0)
+        val = input()
+    print("Have a great day!")
 
-#my functions here
+# my functions here
+def data2(conn):
+    genres = 'Action', 'Sports', 'Misc', 'Role-Playing', 'Shooter', 'Adventure', 'Racing', 'Platform', 'Simulation', 'Fighting', 'Strategy', 'Puzzel'
+    sizes = [20, 14, 10, 9, 8, 8, 8, 5, 5, 5, 4, 4]
+    fig = plt.figure(figsize =(10, 7)) 
+    plt.pie(sizes, labels = genres)
+    plt.show()
 
 
 
@@ -561,7 +584,7 @@ Welcome to the video game sales database!
 What would you like?
 Search for games (search/s)
 Watch a particular game (watch/w)
-Look through sales data about games (data/d)
+Look through data about games (data/d)
 Quit application (quit/q)
 		''',
 		
