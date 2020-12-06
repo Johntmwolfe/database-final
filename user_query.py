@@ -544,6 +544,11 @@ def data(conn):
 	all_sales = get_Sales(game_name, conn)
 	bar_sales(game_name, all_sales)
 
+
+#my functions here
+
+
+
 '''
 A place to store the large ass strings. These are 
 all various menus used within the program
