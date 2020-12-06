@@ -46,7 +46,7 @@ def main():
 	with conn: 
 		menu(0)								#output initial menu
 		val = input()
-		print(val)
+		#print(val)
 		while val != "q" and val != "quit":
 			if val == "s" or val == "search":
 				search(conn)					#search through the database, sql style
