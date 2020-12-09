@@ -700,22 +700,16 @@ def data3(conn):
 		print("Invalid input please put a number between 2 and 5.")		
 
 def data_menu(conn):
-    print("Welcome to the data section!")
-    print("Would you like to see sales data about games? (yes: sales/ no: choose another option in list)")
-    print("Would you like to see a pie chart showing the most common genres? (yes: pie/no: choose another option in list)")
-    print("Quit? (Q/q) ")
-    val = input()
-    while val != "Q" and val != "q" and val != "quit" and val != "Quit":
-        if val == "sales" or val == "Sales":
-            data(conn)
-        elif val == "pie" or val == "Pie":
-            data2(conn)
-        time.sleep(.5)
-        print("Welcome to the data section!")
-    	print("Would you like to see sales data about games? (yes: sales/ no: choose another option in list)")
-    	print("Would you like to see a pie chart showing the most common genres? (yes: pie/no: choose another option in list)")
-    	print("Quit? (Q/q) ")
-        val = input()
+	menu(5)
+	val = input()
+	while val != "Q" and val != "q" and val != "Quit" and val != "quit":
+		if val == "sales" or val == "Sales" or val == "s":
+			data(conn)
+		elif val == "pie" or val == "Pie" or val == "p":
+			data2(conn)
+		time.sleep(.5)
+		menu(5)
+		val = input()
 		if val == "Q" or val == "q" or val == "quit" or val == "Quit":
 			print("Have a great day!")
     
@@ -793,6 +787,13 @@ Which conditional?
 4. <=
 5. =
 6. !=
+'''
+		5:
+'''
+Welcome to the data section!
+Would you like to see sales data about games? (yes: sales)
+Would you like to see a pie chart showing the most common genres? (yes: pie)
+Quit? (Q/q)
 '''
 	}
 	print(switcher.get(int, "ERROR"))
