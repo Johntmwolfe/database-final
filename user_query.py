@@ -46,7 +46,6 @@ def main():
 	with conn: 
 		menu(0)								#output initial menu
 		val = input()
-		#print(val)
 		while val != "q" and val != "quit":
 			if val == "s" or val == "search":
 				search(conn)					#search through the database, sql style
@@ -58,10 +57,6 @@ def main():
 			menu(0)
 			val = input()					#loop
 		print("Have a great day!")
-
-
-
-
 
 '''
 creates the initial connection with the database
@@ -539,6 +534,120 @@ def bar_sales(game_name, all_sales):
 	plt.title("Sales for the video game: " + game_name)
 	plt.show()
 
+# Creates the bar diagram for the sales from each region for 2 games
+def bar_sales2(game1, game2, game1_sales, game2_sales):
+	x = ["North America", "Europe", "Japan", "Others", "Global"]
+	h1 = []
+	h2 = []
+	bar_width = 0.35
+	for index in game1_sales:
+		h1.append(index)
+	for index2 in game2_sales:
+		h2.append(index2)
+	bar1 = np.arange(len(x))
+	bar2 = [i+bar_width for i in bar1]
+	plt.bar(bar1, h1, bar_width, color="orangered", label=game1)
+	plt.bar(bar2, h2, bar_width, color="navy", label=game2)
+	plt.xlabel("Sales in regions")
+	plt.ylabel("Sales in millions")
+	plt.title("Video game sales")
+	plt.xticks(bar1+bar_width/2, x)
+	plt.legend()
+	plt.show()
+
+# Creates the bar diagram for the sales from each region for 3 games
+def bar_sales3(game1, game2, game3, game1_sales, game2_sales, game3_sales):
+	x = ["North America", "Europe", "Japan", "Others", "Global"]
+	h1 = []
+	h2 = []
+	h3 = []
+	bar_width = 0.2
+	for index in game1_sales:
+		h1.append(index)
+	for index2 in game2_sales:
+		h2.append(index2)
+	for index3 in game3_sales:
+		h3.append(index3)
+	bar1 = np.arange(len(x))
+	bar2 = [i+bar_width for i in bar1]
+	bar3 = [i+bar_width for i in bar2]
+	plt.bar(bar1, h1, bar_width, color="red", label=game1)
+	plt.bar(bar2, h2, bar_width, color="orangered", label=game2)
+	plt.bar(bar3, h3, bar_width, color="gold", label=game3)
+	plt.xlabel("Sales in regions")
+	plt.ylabel("Sales in millions")
+	plt.title("Video game sales")
+	plt.xticks(bar1+bar_width, x)
+	plt.legend()
+	plt.show()
+
+# Creates the bar diagram for the sales from each region for 4 games
+def bar_sales4(game1, game2, game3, game4, game1_sales, game2_sales, game3_sales, game4_sales):
+	x = ["North America", "Europe", "Japan", "Others", "Global"]
+	h1 = []
+	h2 = []
+	h3 = []
+	h4 = []
+	bar_width = 0.2
+	for index in game1_sales:
+		h1.append(index)
+	for index2 in game2_sales:
+		h2.append(index2)
+	for index3 in game3_sales:
+		h3.append(index3)
+	for index4 in game4_sales:
+		h4.append(index4)
+	bar1 = np.arange(len(x))
+	bar2 = [i+bar_width for i in bar1]
+	bar3 = [i+bar_width for i in bar2]
+	bar4 = [i+bar_width for i in bar3]
+	plt.bar(bar1, h1, bar_width, color="red", label=game1)
+	plt.bar(bar2, h2, bar_width, color="orangered", label=game2)
+	plt.bar(bar3, h3, bar_width, color="gold", label=game3)
+	plt.bar(bar4, h4, bar_width, color="seagreen", label=game4)
+	plt.xlabel("Sales in regions")
+	plt.ylabel("Sales in millions")
+	plt.title("Video game sales")
+	plt.xticks(bar1+0.3, x)
+	plt.legend()
+	plt.show()
+
+# Creates the bar diagram for the sales from each region for 5 games
+def bar_sales5(game1, game2, game3, game4, game5, game1_sales, game2_sales, game3_sales, game4_sales, game5_sales):
+	x = ["North America", "Europe", "Japan", "Others", "Global"]
+	h1 = []
+	h2 = []
+	h3 = []
+	h4 = []
+	h5 = []
+	bar_width = 0.15
+	for index in game1_sales:
+		h1.append(index)
+	for index2 in game2_sales:
+		h2.append(index2)
+	for index3 in game3_sales:
+		h3.append(index3)
+	for index4 in game4_sales:
+		h4.append(index4)
+	for index5 in game5_sales:
+		h5.append(index5)
+	bar1 = np.arange(len(x))
+	bar2 = [i+bar_width for i in bar1]
+	bar3 = [i+bar_width for i in bar2]
+	bar4 = [i+bar_width for i in bar3]
+	bar5 = [i+bar_width for i in bar4]
+	plt.bar(bar1, h1, bar_width, color="red", label=game1)
+	plt.bar(bar2, h2, bar_width, color="orangered", label=game2)
+	plt.bar(bar3, h3, bar_width, color="gold", label=game3)
+	plt.bar(bar4, h4, bar_width, color="seagreen", label=game4)
+	plt.bar(bar5, h5, bar_width, color="dodgerblue", label=game5)
+	plt.xlabel("Sales in regions")
+	plt.ylabel("Sales in millions")
+	plt.title("Video game sales")
+	plt.xticks(bar1+0.3, x)
+	plt.legend()
+	plt.show()
+
 # Prints a matplotlib bar chart of sales from all parts of the world.
 def data(conn):
 	print("Which video game would you like to see for sales data?")
@@ -546,21 +655,68 @@ def data(conn):
 	all_sales = get_Sales(game_name, conn)
 	bar_sales(game_name, all_sales)
 
+# Prints a matplotlib bar chart of sales for multiple games.
+def data3(conn):
+	print("How many games would you like to compare?")
+	num = input()
+
+	if num == "2": 
+		game1 = input("Enter in video game 1 here --> ")
+		game2 = input("Enter in video game 2 here --> ")
+		game1_sales = get_Sales(game1, conn)
+		game2_sales = get_Sales(game2, conn)
+		bar_sales2(game1, game2, game1_sales, game2_sales)
+	elif num == "3":
+		game1 = input("Enter in video game 1 here --> ")
+		game2 = input("Enter in video game 2 here --> ")
+		game3 = input("Enter in video game 3 here --> ")
+		game1_sales = get_Sales(game1, conn)
+		game2_sales = get_Sales(game2, conn)
+		game3_sales = get_Sales(game3, conn)
+		bar_sales3(game1, game2, game3, game1_sales, game2_sales, game3_sales)
+	elif num == "4":
+		game1 = input("Enter in video game 1 here --> ")
+		game2 = input("Enter in video game 2 here --> ")
+		game3 = input("Enter in video game 3 here --> ")
+		game4 = input("Enter in video game 4 here --> ")
+		game1_sales = get_Sales(game1, conn)
+		game2_sales = get_Sales(game2, conn)
+		game3_sales = get_Sales(game3, conn)
+		game4_sales = get_Sales(game4, conn)
+		bar_sales4(game1, game2, game3, game4, game1_sales, game2_sales, game3_sales, game4_sales)
+	elif num == "5":
+		game1 = input("Enter in video game 1 here --> ")
+		game2 = input("Enter in video game 2 here --> ")
+		game3 = input("Enter in video game 3 here --> ")
+		game4 = input("Enter in video game 4 here --> ")
+		game5 = input("Enter in video game 5 here --> ")
+		game1_sales = get_Sales(game1, conn)
+		game2_sales = get_Sales(game2, conn)
+		game3_sales = get_Sales(game3, conn)
+		game4_sales = get_Sales(game4, conn)
+		game5_sales = get_Sales(game5, conn)
+		bar_sales5(game1, game2, game3, game4, game5, game1_sales, game2_sales, game3_sales, game4_sales, game5_sales)
+	else:
+		print("Invalid input please put a number between 2 and 5.")		
+
 def data_menu(conn):
-    print("Welcome to the data section!")
-    print("Would you like to see sales data about games? (yes: sales/ no: choose another option in list)")
-    print("Would you like to see a pie chart showing the most common genres? (yes: pie/no: choose another option in list)")
-    print("Quit? (Q/q) ")
-    val = input()
-    while val != "Q" and val != "q" and val != "quit" and val != "Quit":
-        if val == "sales" or val == "Sales":
-            data(conn)
-        elif val == "pie" or val == "Pie":
-            data2(conn)
-        time.sleep(.5)
-        menu(0)
-        val = input()
-    print("Have a great day!")
+	print("Welcome to the data section!")
+	print("Would you like to see a sales data about a game? (sales)")
+	print("Would you like to see a comparison of multiple games and their sales' data? (sales2) Note: You can compare up to 5 games at most.")
+	print("Would you like to see a pie chart showing the most common genres? (pie)")
+	print("Quit data section? (Quit)")
+	val = input()
+	while val != "Q" and val != "q" and val != "quit" and val != "Quit":
+		if val == "sales" or val == "Sales":
+			data(conn)
+		elif val == "sales2" or val == "Sales2":
+			data3(conn)
+		elif val == "pie" or val == "Pie":
+			data2(conn)
+		time.sleep(.5)
+		menu(0)
+		val = input()
+	print("Thanks for looking at our data! Have a great day!")
     
 def func(pct, allvalues): 
     absolute = int(pct / 100.*np.sum(allvalues)) 
@@ -573,7 +729,6 @@ def data2(conn):
     fig = plt.figure(figsize =(10, 7)) 
     plt.pie(sizes, labels = genres, autopct = lambda pct: func(pct, data))
     plt.show()
-
 
 
 '''
