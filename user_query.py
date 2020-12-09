@@ -700,23 +700,24 @@ def data3(conn):
 		print("Invalid input please put a number between 2 and 5.")		
 
 def data_menu(conn):
-	print("Welcome to the data section!")
-	print("Would you like to see a sales data about a game? (sales)")
-	print("Would you like to see a comparison of multiple games and their sales' data? (sales2) Note: You can compare up to 5 games at most.")
-	print("Would you like to see a pie chart showing the most common genres? (pie)")
-	print("Quit data section? (Quit)")
-	val = input()
-	while val != "Q" and val != "q" and val != "quit" and val != "Quit":
-		if val == "sales" or val == "Sales":
-			data(conn)
-		elif val == "sales2" or val == "Sales2":
-			data3(conn)
-		elif val == "pie" or val == "Pie":
-			data2(conn)
-		time.sleep(.5)
-		menu(0)
-		val = input()
-	print("Thanks for looking at our data! Have a great day!")
+    print("Welcome to the data section!")
+    print("Would you like to see sales data about games? (yes: sales/ no: choose another option in list)")
+    print("Would you like to see a pie chart showing the most common genres? (yes: pie/no: choose another option in list)")
+    print("Quit? (Q/q) ")
+    val = input()
+    while val != "Q" and val != "q" and val != "quit" and val != "Quit":
+        if val == "sales" or val == "Sales":
+            data(conn)
+        elif val == "pie" or val == "Pie":
+            data2(conn)
+        time.sleep(.5)
+        print("Welcome to the data section!")
+    	print("Would you like to see sales data about games? (yes: sales/ no: choose another option in list)")
+    	print("Would you like to see a pie chart showing the most common genres? (yes: pie/no: choose another option in list)")
+    	print("Quit? (Q/q) ")
+        val = input()
+		if val == "Q" or val == "q" or val == "quit" or val == "Quit":
+			print("Have a great day!")
     
 def func(pct, allvalues): 
     absolute = int(pct / 100.*np.sum(allvalues)) 
