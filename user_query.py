@@ -89,54 +89,54 @@ def search(conn):
 	menu(2)						#Takes a string representing all the columns they want
 	val = input()			#take that string in
 	liz = process(val)			#process the string, turning it into a list of attributes
-	if liz[0] != "ERR":		#If they made a valid string...
-		if liz[0] == "*":	#If they included all of it...
-			str += "* "
-		else:								#NOT all of it
-			for attrib in liz:				#for each item in the list...
-				str += attrib + ", "		#...add it to the select operation
-			str = str[:-2] + " "			#cut off the end that has the comma
-		str += "from sales"				#add the database
+	while liz[0] == "ERR":
+		menu(2)
+		val = input()
+		liz = process(val)
+
+	if liz[0] == "*":	#If they included all of it...
+		str += "* "
+	else:								#NOT all of it
+		for attrib in liz:				#for each item in the list...
+			str += attrib + ", "		#...add it to the select operation
+		str = str[:-2] + " "			#cut off the end that has the comma
+	str += "from sales "				#add the database
 		
-		#condition operation
-		str = conditions(str, False)	#compile the conditions the user wants
+	#condition operation
+	str = conditions(str, False)	#compile the conditions the user wants
 
-		#group operation
-		val = input("Do you want the group the output to a certain attribute? \n(yes/no): ")
+	#group operation
+	val = input("Do you want the group the output to a certain attribute? \n(yes/no): ")
+	if val == "yes" or val == "y":
+		print("Which attribute?\n")
+		val = att_grab()					#att_grab() grabs a single column
+		str += "group by " + val + " "
+
+		#having operation
+		val = input("Do you want to have a condition for these groupings?\n(yes/no): ")
 		if val == "yes" or val == "y":
-			print("Which attribute?\n")
-			val = att_grab()					#att_grab() grabs a single column
-			str += "group by " + val + " "
+			str = conditions(str,True)	#adds only one conditional (true prevents looping)
 
-			#having operation
-			val = input("Do you want to have a condition for these groupings?\n(yes/no): ")
-			if val == "yes" or val == "y":
-				str = conditions(str,True)	#adds only one conditional (true prevents looping)
+	#order by operation
+	val = input("Do you want the output sorted?\n(y/n): ")
+	if val == "yes" or val == "y":
+		str += " order by"
+		str = order(str)				#loops for how many orders the user wants
 
-		#order by operation
-		val = input("Do you want the output sorted?\n(y/n): ")
-		if val == "yes" or val == "y":
-			str += " order by"
-			str = order(str)				#loops for how many orders the user wants
-
-		#limit operation
-		val = input("Do you want a limit to the return values? (y/n): ")
-		if val == "yes" or val == "y":
-			val = input("Limit by how many?: ")		#how many rows does the user want (at max)
-			str += " limit " + val
+	#limit operation
+	val = input("Do you want a limit to the return values? (y/n): ")
+	if val == "yes" or val == "y":
+		val = input("Limit by how many?: ")		#how many rows does the user want (at max)
+		str += " limit " + val
 		
-		#try the string
-		cur = conn.cursor()		#make a cursor object to step through the database
-		#print(str)
-		cur.execute(str)		#perform the select operations
+	#try the string
+	cur = conn.cursor()		#make a cursor object to step through the database
+	print("SELECTION: " + str)
+	cur.execute(str)		#perform the select operations
 
-		rows = cur.fetchall()	#make a list of all the rows selecteed
+	rows = cur.fetchall()	#make a list of all the rows selecteed
 
-		if len(rows) > 50:
-			pages(rows, liz)
-		else:
-			for row in rows:		
-				print(row)			#print all the rows
+	pages(rows, liz)		#print all the rows
 
 
 
@@ -151,10 +151,10 @@ def pages(rows, lizt):
 	while True:
 		table = []
 		header = []
-		print("*******************************************************")
+		print("****************************************************************************")
 		print("Page " + str(page + 1) + " of " +  str(last))
 		x = 0
-		print("#", end = "\t")
+		#print("#", end = "\t")
 		while x < len(lizt):
 			if lizt[x] == "*":
 				header.append("Standing")
@@ -169,7 +169,7 @@ def pages(rows, lizt):
 				header.append("Other_Sales")
 				header.append("Global_Sales")
 			else:
-				header.append(item)
+				header.append(lizt[x])
 			x += 1
 		x = 0
 		while x < 50:
@@ -180,8 +180,8 @@ def pages(rows, lizt):
 				table.append(rows[place])
 			x += 1
 		print(tabulate(table, headers = header))
-		print("****************************************************")
-		print("(f)irst\t\t(p)revious\t\tPage" + str(page+1) + " of " + str(last) + "\t\t(n)ext\t\t(l)ast")
+		print("****************************************************************************")
+		print("(f)irst\t\t(p)revious\t\tPage " + str(page+1) + " of " + str(last) + "\t\t(n)ext\t\t(l)ast")
 		val = input("Or (q)uit")
 		if val == "f":
 			page = 0
@@ -191,10 +191,10 @@ def pages(rows, lizt):
 				page = 0
 		elif val == "n":
 			page += 1
-			if page > last:
-				page = last
+			if page > last - 1:
+				page = last - 1
 		elif val == "l":
-			page = last
+			page = last - 1
 		elif val == "q":
 			break;
 		else:
@@ -342,6 +342,8 @@ def conditions(select, single):
 				clone += " = " + comparator
 			else:
 				clone += " != " + comparator
+		else:
+			looped = False
 		
 		
 		if (single):				#if we're not supposed to loop after this
@@ -350,7 +352,7 @@ def conditions(select, single):
 			print("\nAny other conditions?\n")
 			menu(3)					
 			val = input()	#ask them for more comparisons
-			if val != "6":	
+			if val != "6" and looped == True:	
 				clone += " and "
 	if looped:					#if we actually added a conditional..
 		return clone			#send it back
@@ -425,7 +427,7 @@ def watch(conn):
 	#specific
 	if val == "specific" or val == "s":
 		val = input("Type of the name of the game in (case-sensitive): ")		#get the specific value
-		search = "select name, platform, year, genre from sales where name like '%" + val + "%'"
+		search = "select *from sales where name like '%" + val + "%'"
 		curr.execute(search)														#search for the specific value
 
 		rows = curr.fetchall()			#grab every game that fits
@@ -464,7 +466,7 @@ def reduce(lizt):
 		val = input("Type in a year: ")
 		i = 0
 		while i < len(clone):		#step through the list
-			if clone[i][2] == val:	#if the year value matches their year...
+			if clone[i][2] == int(val):	#if the year value matches their year...
 				i += 1				#it can stay
 			else:
 				clone.pop(i)		#lest, we DESTROY IT
