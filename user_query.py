@@ -712,19 +712,14 @@ def data_menu(conn):
 		val = input()
 		if val == "Q" or val == "q" or val == "quit" or val == "Quit":
 			print("Have a great day!")
-    
-def func(pct, allvalues): 
-    absolute = int(pct / 100.*np.sum(allvalues)) 
-    return "{:.1f}%\n({:d} g)".format(pct, absolute)
 
-# pir chart data
+# pie chart data
 def data2(conn):
     genres = 'Action', 'Sports', 'Misc', 'Role-Playing', 'Shooter', 'Adventure', 'Racing', 'Platform', 'Simulation', 'Fighting', 'Strategy', 'Puzzel'
     sizes = [20, 14, 10, 9, 8, 8, 8, 5, 5, 5, 4, 4]
     fig = plt.figure(figsize =(10, 7)) 
-    plt.pie(sizes, labels = genres, autopct = lambda pct: func(pct, data))
+    plt.pie(sizes, labels = genres)
     plt.show()
-
 
 '''
 A place to store the large ass strings. These are 
