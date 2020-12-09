@@ -3,11 +3,11 @@ import random
 import sqlite3
 import math
 import webbrowser
-from databases import Database
-#import charts
 import matplotlib.pyplot as plt
+plt.rcParams.update({'figure.max_open_warning': 0})
 from sqlite3 import Error
 from tabulate import tabulate
+import numpy as np 
 """
 information below is summarized on sqlitetutorial.net
 
@@ -42,18 +42,18 @@ Main function, drives the program
 '''
 def main():
 	random.seed()								#seed used for the watch function
-	conn = create_connection("proj.db")			#connect to the database
+	conn = create_connection("vgsales.db")			#connect to the database
 	with conn: 
 		menu(0)								#output initial menu
 		val = input()
-		print(val)
+		#print(val)
 		while val != "q" and val != "quit":
 			if val == "s" or val == "search":
 				search(conn)					#search through the database, sql style
 			elif val == "w" or val == "watch":
 				watch(conn)						#pull up a twitch stream of the game
 			elif val == "d" or val == "data":
-				data(conn)							#look at the data in a visualized format
+				data_menu(conn)							#look at the data in a visualized format
 			time.sleep(.5)
 			menu(0)
 			val = input()					#loop
@@ -175,7 +175,7 @@ def pages(rows, lizt):
 		while x < 50:
 			place = 50 * page + x
 			if place >= len(rows):
-				break;
+				break
 			else:
 				table.append(rows[place])
 			x += 1
@@ -196,7 +196,7 @@ def pages(rows, lizt):
 		elif val == "l":
 			page = last - 1
 		elif val == "q":
-			break;
+			break
 		else:
 			print("Not a valid string")
 
@@ -435,7 +435,7 @@ def watch(conn):
 			rows = reduce(rows)			#reduce the amount of rows
 			time.sleep(.2)
 
-			line += row[0][0]
+			line += rows[0][0]
 
 	#new
 	elif val == "new" or val == "n":			
@@ -522,27 +522,61 @@ def reduce(lizt):
 	else:				#if they DIDN'T reduce to nothing..
 		return clone	#return their good work!
 
-
-def get_Sales(conn):
+# Gets the sales information from the database
+def get_Sales(game_name, conn):
 	with conn:
-		NA_Sales = "SELECT NA_Sales, EU_Sales, JP_Sales, Other_Sales, Global_Sales FROM sales WHERE Name = 'Wii Sports';"
-		return conn.execute(NA_Sales).fetchone()
+		NA_Sales = "SELECT NA_Sales, EU_Sales, JP_Sales, Other_Sales, Global_Sales FROM sales WHERE Name = ?;"
+		return conn.execute(NA_Sales, (game_name,)).fetchone()
 
-def bar_sales(sales):
+# Creates the bar diagram for the sales from each region
+def bar_sales(game_name, all_sales):
 	x = ["North America", "Europe", "Japan", "Others", "Global"]
-	h = [float(sales[0]), float(sales[1]), float(sales[2]), float(sales[3]), float(sales[4])]
+	h = []
+	for index in all_sales:
+		h.append(index)
 	c = ["darkred", "orangered", "darkgreen", "navy", "darkviolet"]
 	plt.bar(x, h, color=c)
 	plt.xlabel("Sales in regions")
 	plt.ylabel("Sales in millions")
-	plt.title("Sales for Wii Sports")
+	plt.title("Sales for the video game: " + game_name)
 	plt.show()
 
 # Prints a matplotlib bar chart of sales from all parts of the world.
 def data(conn):
-	print("Which video game do you want to see for sales data?")
-	all_sales = get_Sales(conn)
-	bar_sales(all_sales)
+	print("Which video game would you like to see for sales data?")
+	game_name = input()
+	all_sales = get_Sales(game_name, conn)
+	bar_sales(game_name, all_sales)
+
+def data_menu(conn):
+    print("Welcome to the data section!")
+    print("Would you like to see sales data about games? (yes: sales/ no: choose another option in list)")
+    print("Would you like to see a pie chart showing the most common genres? (yes: pie/no: choose another option in list)")
+    print("Quit? (Q/q) ")
+    val = input()
+    while val != "Q" and val != "q" and val != "quit" and val != "Quit":
+        if val == "sales" or val == "Sales":
+            data(conn)
+        elif val == "pie" or val == "Pie":
+            data2(conn)
+        time.sleep(.5)
+        menu(0)
+        val = input()
+    print("Have a great day!")
+    
+def func(pct, allvalues): 
+    absolute = int(pct / 100.*np.sum(allvalues)) 
+    return "{:.1f}%\n({:d} g)".format(pct, absolute)
+
+# pir chart data
+def data2(conn):
+    genres = 'Action', 'Sports', 'Misc', 'Role-Playing', 'Shooter', 'Adventure', 'Racing', 'Platform', 'Simulation', 'Fighting', 'Strategy', 'Puzzel'
+    sizes = [20, 14, 10, 9, 8, 8, 8, 5, 5, 5, 4, 4]
+    fig = plt.figure(figsize =(10, 7)) 
+    plt.pie(sizes, labels = genres, autopct = lambda pct: func(pct, data))
+    plt.show()
+
+
 
 '''
 A place to store the large ass strings. These are 
@@ -556,7 +590,7 @@ Welcome to the video game sales database!
 What would you like?
 Search for games (search/s)
 Watch a particular game (watch/w)
-Look through sales data about games (data/d)
+Look through data about games (data/d)
 Quit application (quit/q)
 		''',
 		
@@ -608,6 +642,5 @@ Which conditional?
 '''
 	}
 	print(switcher.get(int, "ERROR"))
-	#print switcher.get(int, "ERROR")
 
 main()
