@@ -149,7 +149,6 @@ def pages(rows, lizt):
 		print("*******************************************************")
 		print("Page " + str(page + 1) + " of " +  str(last))
 		x = 0
-		#print("#", end = "\t")
 		while x < len(lizt):
 			if lizt[x] == "*":
 				header.append("Standing")
@@ -257,7 +256,8 @@ def conditions(clone, single):
 	val = input()
 	while val != "6":			#while we haven't exited
 		looped = True			#we looped!
-		print(clone)
+        #print(clone)
+
 		#range measure
 		if val == "1":
 			val = att_grab()				#grab the attribute they want
@@ -337,7 +337,7 @@ def conditions(clone, single):
 			else:
 				clone += " != " + comparator
 		else:
-			looped = False
+            looped = False
 		
 		if (single):				#if we're not supposed to loop after this
 			val = "6"				#force the user to quit
@@ -455,11 +455,11 @@ def reduce(lizt):
 	if val == "y":
 		val = input("Type in a year: ")
 		i = 0
-		while i < len(clone):		#step through the list
+		while i < len(clone):		    #step through the list
 			if clone[i][2] == int(val):	#if the year value matches their year...
-				i += 1				#it can stay
+				i += 1				    #it can stay
 			else:
-				clone.pop(i)		#lest, we DESTROY IT
+				clone.pop(i)		    #lest, we DESTROY IT
 	
 	#genre
 	elif val == "g":							#the other cases function much the same as the year case
@@ -483,7 +483,7 @@ def reduce(lizt):
 
 	#name case
 	elif val == "n":
-		val = input("Type in a title (remember, names are case sensitive: ")
+		val = input("Type in a title: ")
 		i = 0
 		while i < len(clone):
 			if clone[i][0].find(val) != -1:
@@ -508,8 +508,16 @@ def reduce(lizt):
 # Gets the sales information from the database
 def get_Sales(game_name, conn):
 	with conn:
-		NA_Sales = "SELECT NA_Sales, EU_Sales, JP_Sales, Other_Sales, Global_Sales FROM sales WHERE Name = ?;"
-		return conn.execute(NA_Sales, (game_name,)).fetchone()
+		sales = "SELECT Standing, Name FROM sales WHERE Name LIKE ?;"
+		stuff = conn.execute(sales, ("%{}%".format(game_name),)).fetchall()
+		print("Standing | Name ")
+		print("-------------------------------")
+		for column in stuff:
+			print(f"{column[0]}	 | {column[1]}")
+		print("This game has multiple other games with a smiliar name. Please enter standing number based on the name of the game you are looking for from the table above. If the table is empty then just retype the name of the game.")
+		num = input()
+		new_sales2 = "SELECT NA_Sales, EU_Sales, JP_Sales, Other_Sales, Global_Sales FROM sales WHERE Standing = ?;"
+		return conn.execute(new_sales2, (num,)).fetchone()
 
 # Creates the bar diagram for the sales from each region
 def bar_sales(game_name, all_sales):
@@ -652,42 +660,42 @@ def data3(conn):
 
 	if num == "2": 
 		game1 = input("Enter in video game 1 here --> ")
-		game2 = input("Enter in video game 2 here --> ")
 		game1_sales = get_Sales(game1, conn)
+		game2 = input("Enter in video game 2 here --> ")
 		game2_sales = get_Sales(game2, conn)
 		bar_sales2(game1, game2, game1_sales, game2_sales)
 	elif num == "3":
 		game1 = input("Enter in video game 1 here --> ")
-		game2 = input("Enter in video game 2 here --> ")
-		game3 = input("Enter in video game 3 here --> ")
 		game1_sales = get_Sales(game1, conn)
+		game2 = input("Enter in video game 2 here --> ")
 		game2_sales = get_Sales(game2, conn)
+		game3 = input("Enter in video game 3 here --> ")
 		game3_sales = get_Sales(game3, conn)
 		bar_sales3(game1, game2, game3, game1_sales, game2_sales, game3_sales)
 	elif num == "4":
 		game1 = input("Enter in video game 1 here --> ")
-		game2 = input("Enter in video game 2 here --> ")
-		game3 = input("Enter in video game 3 here --> ")
-		game4 = input("Enter in video game 4 here --> ")
 		game1_sales = get_Sales(game1, conn)
+		game2 = input("Enter in video game 2 here --> ")
 		game2_sales = get_Sales(game2, conn)
+		game3 = input("Enter in video game 3 here --> ")
 		game3_sales = get_Sales(game3, conn)
+		game4 = input("Enter in video game 4 here --> ")
 		game4_sales = get_Sales(game4, conn)
 		bar_sales4(game1, game2, game3, game4, game1_sales, game2_sales, game3_sales, game4_sales)
 	elif num == "5":
 		game1 = input("Enter in video game 1 here --> ")
-		game2 = input("Enter in video game 2 here --> ")
-		game3 = input("Enter in video game 3 here --> ")
-		game4 = input("Enter in video game 4 here --> ")
-		game5 = input("Enter in video game 5 here --> ")
 		game1_sales = get_Sales(game1, conn)
+		game2 = input("Enter in video game 2 here --> ")
 		game2_sales = get_Sales(game2, conn)
+		game3 = input("Enter in video game 3 here --> ")
 		game3_sales = get_Sales(game3, conn)
+		game4 = input("Enter in video game 4 here --> ")
 		game4_sales = get_Sales(game4, conn)
+		game5 = input("Enter in video game 5 here --> ")
 		game5_sales = get_Sales(game5, conn)
 		bar_sales5(game1, game2, game3, game4, game5, game1_sales, game2_sales, game3_sales, game4_sales, game5_sales)
 	else:
-		print("Invalid input please put a number between 2 and 5.")		
+		print("Invalid input please put a number between 2 and 5.")
 
 def data_menu(conn):
 	menu(5)
@@ -695,6 +703,8 @@ def data_menu(conn):
 	while val != "Q" and val != "q" and val != "Quit" and val != "quit":
 		if val == "sales" or val == "Sales" or val == "s":
 			data(conn)
+		elif val == "sales2" or val == "Sales2" or val == "s2":
+			data3(conn)
 		elif val == "pie" or val == "Pie" or val == "p":
 			data2(conn)
 		time.sleep(.5)
@@ -782,6 +792,7 @@ Which conditional?
 '''
 Welcome to the data section!
 Would you like to see sales data about games? (yes: sales)
+Would you like to see sales data between multiple games? (yes: sales2) Note: You can compare up to 5 games only.
 Would you like to see a pie chart showing the most common genres? (yes: pie)
 Quit? (Q/q)
 '''
