@@ -123,7 +123,7 @@ def search(conn):
 	if val == "yes" or val == "y":
 		val = input("Limit by how many?: ")		#how many rows does the user want (at max)
 		str += " limit " + val
-		
+	print("Selection: " + str)
 	#try the string
 	cur = conn.cursor()		#make a cursor object to step through the database
 	#print(str)
@@ -247,9 +247,8 @@ def process(parser):
 Create a long list of conditionals. Or just one,
 depending on the single bool
 '''
-def conditions(select, single):
+def conditions(clone, single):
 	looped = False				#bool to see if we've entered the loop or not
-	clone = select
 	if not single:			#if we're not just going through once...	
 		clone += " where "	#add the where
 
@@ -258,7 +257,7 @@ def conditions(select, single):
 	val = input()
 	while val != "6":			#while we haven't exited
 		looped = True			#we looped!
-
+		print(clone)
 		#range measure
 		if val == "1":
 			val = att_grab()				#grab the attribute they want
@@ -348,10 +347,7 @@ def conditions(select, single):
 			val = input()	#ask them for more comparisons
 			if val != "6" and looped == True:	
 				clone += " and "
-	if looped:					#if we actually added a conditional..
-		return clone			#send it back
-	else:
-		return select			#otherwise, no work was done here. Send back the old.
+	return clone			#send it back
 
 
 
@@ -429,7 +425,7 @@ def watch(conn):
 			rows = reduce(rows)			#reduce the amount of rows
 			time.sleep(.2)
 
-			line += rows[0][0]
+		line += rows[0][0]
 
 	#new
 	elif val == "new" or val == "n":			
@@ -460,7 +456,7 @@ def reduce(lizt):
 		val = input("Type in a year: ")
 		i = 0
 		while i < len(clone):		#step through the list
-			if clone[i][2] == val:	#if the year value matches their year...
+			if clone[i][2] == int(val):	#if the year value matches their year...
 				i += 1				#it can stay
 			else:
 				clone.pop(i)		#lest, we DESTROY IT
@@ -470,7 +466,7 @@ def reduce(lizt):
 		val = input("Type in the genre: ")
 		i = 0
 		while i < len(clone):
-			if clone[i][3] == int(val):
+			if clone[i][3] == val:
 				i += 1
 			else:
 				clone.pop(i)
@@ -487,7 +483,7 @@ def reduce(lizt):
 
 	#name case
 	elif val == "n":
-		val = input("Type in a title: ")
+		val = input("Type in a title (remember, names are case sensitive: ")
 		i = 0
 		while i < len(clone):
 			if clone[i][0].find(val) != -1:
@@ -497,14 +493,7 @@ def reduce(lizt):
 
 	#This isn't a destroy case: this prints off all the games so far allowed by the search so far
 	elif val == "p":
-		if len(lizt) > 50:
-			pages(lizt, ["Name","Platform","Year","Genre"])
-		else:
-			x = 1
-			for row in lizt:			#for every row...
-				print(str(x) + ": ")	#the number of this row
-				print(row)				#the row itself
-				x += 1
+		pages(lizt, ["Name","Platform","Year","Genre"])
 	
 	else:
 		print("Not valid, asshole.")
@@ -788,7 +777,7 @@ Which conditional?
 4. <=
 5. =
 6. !=
-'''
+''',
 		5:
 '''
 Welcome to the data section!
