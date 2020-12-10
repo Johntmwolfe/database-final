@@ -722,7 +722,7 @@ def data2(conn):
     genres = 'Action', 'Sports', 'Misc', 'Role-Playing', 'Shooter', 'Adventure', 'Racing', 'Platform', 'Simulation', 'Fighting', 'Strategy', 'Puzzel'
     sizes = [20, 14, 10, 9, 8, 8, 8, 5, 5, 5, 4, 4]
     fig = plt.figure(figsize =(10, 7)) 
-    plt.pie(sizes, labels = genres, autopct = lambda pct: func(pct, data))
+    plt.pie(sizes, labels = genres)
     plt.show()
 
 
