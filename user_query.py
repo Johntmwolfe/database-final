@@ -8,6 +8,7 @@ plt.rcParams.update({'figure.max_open_warning': 0})
 from sqlite3 import Error
 from tabulate import tabulate
 import numpy as np 
+import pandas as pd
 """
 information below is summarized on sqlitetutorial.net
 
@@ -707,6 +708,8 @@ def data_menu(conn):
 			data(conn)
 		elif val == "pie" or val == "Pie" or val == "p":
 			data2(conn)
+		elif val == "name" or val == "Name":
+			data5(conn)
 		time.sleep(.5)
 		menu(5)
 		val = input()
@@ -715,11 +718,29 @@ def data_menu(conn):
 
 # pie chart data
 def data2(conn):
-    genres = 'Action', 'Sports', 'Misc', 'Role-Playing', 'Shooter', 'Adventure', 'Racing', 'Platform', 'Simulation', 'Fighting', 'Strategy', 'Puzzel'
-    sizes = [20, 14, 10, 9, 8, 8, 8, 5, 5, 5, 4, 4]
-    fig = plt.figure(figsize =(10, 7)) 
-    plt.pie(sizes, labels = genres)
-    plt.show()
+	genres = 'Action', 'Sports', 'Misc', 'Role-Playing', 'Shooter', 'Adventure', 'Racing', 'Platform', 'Simulation', 'Fighting', 'Strategy', 'Puzzel'
+	sizes = [20, 14, 10, 9, 8, 8, 8, 5, 5, 5, 4, 4]
+	fig = plt.figure(figsize =(10, 7))
+	plt.pie(sizes, labels = genres, autopct='%1.1f%%')
+	plt.show()
+
+def get_Games(name, conn):
+	with conn:
+		game_genres = "SELECT Name, Genre FROM sales WHERE Name = ?;"
+		return conn.execute(game_genres, (name,)).fetchone()
+def game_pie_chart(name, all_game_names):
+	df = pd.read_csv('vgsales.csv')
+	genre_data = df['Genre']
+	game_data = df['Name']
+	plt.pie(game_data, labels=genre_data, autopct='%1.1%%')
+	plt.title("Most Popular Genres for %" + name + "%")
+	plt.show()
+
+def data5(conn):
+	print("Which character/name/phrase would you like to see data for?")
+	name = input()
+	all_game_names = get_Games(name, conn)
+	game_pie_chart(name, all_game_names)
 
 '''
 A place to store the large ass strings. These are 
@@ -782,12 +803,13 @@ Which conditional?
 4. <=
 5. =
 6. !=
-'''
+''',
 		5:
 '''
 Welcome to the data section!
 Would you like to see sales data about games? (yes: sales)
 Would you like to see a pie chart showing the most common genres? (yes: pie)
+Would you like to see how many games contain a certain character or name? (yes: name)
 Quit? (Q/q)
 '''
 	}
