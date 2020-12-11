@@ -557,10 +557,10 @@ def get_Sales(game_name, conn):
 # Creates the bar diagram for the sales from each region
 def bar_sales(all_sales):
 	x = ["North America", "Europe", "Japan", "Others", "Global"]
-	c = ["red", "orange", "gold", "green", "blue"]
+	c = ["red", "orange", "yellow", "green", "blue"]
 	h = []
 	for index in all_sales:
-		h.append(index)
+		h.append(float(index))
 	plt.style.use('dark_background')
 	plt.bar(x, h, color=c, linewidth=1, edgecolor="white")
 	plt.annotate(str(h[0]), xy=(0, h[0] + 1))
@@ -580,9 +580,9 @@ def bar_sales2(game1, game2, game1_sales, game2_sales):
 	h2 = []
 	bar_width = 0.35
 	for index in game1_sales:
-		h1.append(index)
+		h1.append(float(index))
 	for index2 in game2_sales:
-		h2.append(index2)
+		h2.append(float(index2))
 	bar1 = np.arange(len(x))
 	bar2 = [i+bar_width for i in bar1]
 	plt.style.use('dark_background')
@@ -613,11 +613,11 @@ def bar_sales3(game1, game2, game3, game1_sales, game2_sales, game3_sales):
 	h3 = []
 	bar_width = 0.2
 	for index in game1_sales:
-		h1.append(index)
+		h1.append(float(index))
 	for index2 in game2_sales:
-		h2.append(index2)
+		h2.append(float(index2))
 	for index3 in game3_sales:
-		h3.append(index3)
+		h3.append(float(index3))
 	bar1 = np.arange(len(x))
 	bar2 = [i+bar_width for i in bar1]
 	bar3 = [i+bar_width for i in bar2]
@@ -658,13 +658,13 @@ def bar_sales4(game1, game2, game3, game4, game1_sales, game2_sales, game3_sales
 	h4 = []
 	bar_width = 0.2
 	for index in game1_sales:
-		h1.append(index)
+		h1.append(float(index))
 	for index2 in game2_sales:
-		h2.append(index2)
+		h2.append(float(index2))
 	for index3 in game3_sales:
-		h3.append(index3)
+		h3.append(float(index3))
 	for index4 in game4_sales:
-		h4.append(index4)
+		h4.append(float(index4))
 	bar1 = np.arange(len(x))
 	bar2 = [i+bar_width for i in bar1]
 	bar3 = [i+bar_width for i in bar2]
@@ -714,15 +714,15 @@ def bar_sales5(game1, game2, game3, game4, game5, game1_sales, game2_sales, game
 	h5 = []
 	bar_width = 0.15
 	for index in game1_sales:
-		h1.append(index)
+		h1.append(float(index))
 	for index2 in game2_sales:
-		h2.append(index2)
+		h2.append(float(index2))
 	for index3 in game3_sales:
-		h3.append(index3)
+		h3.append(float(index3))
 	for index4 in game4_sales:
-		h4.append(index4)
+		h4.append(float(index4))
 	for index5 in game5_sales:
-		h5.append(index5)
+		h5.append(float(index5))
 	bar1 = np.arange(len(x))
 	bar2 = [i+bar_width for i in bar1]
 	bar3 = [i+bar_width for i in bar2]
