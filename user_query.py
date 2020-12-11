@@ -86,7 +86,7 @@ query on their own.
 def search(conn):
 	str = "select "
 	print("******************************************")
-	print("*	 Welcome to the Search section!		*")
+	print("*     Welcome to the Search section!     *")
 	print("******************************************")
 	print("\nWhich attributes do you want to use to search?\n")
 	menu(2)						#Takes a string representing all the columns they want
@@ -432,7 +432,7 @@ def watch(conn):
 	print("**********************************")
 	print("*  Welcome to the watch section! *")
 	print()
-	print("* Here you will be able to watch	*")
+	print("* Here you will be able to watch *")
 	print("*   a stream via Twitch of any   *")
 	print("*      game you would like!      *")
 	print("**********************************")
@@ -882,7 +882,7 @@ def data_menu(conn):
 
 # pie chart data
 def data2(conn):
-	genres = 'Action', 'Sports', 'Misc', 'Role-Playing', 'Shooter', 'Adventure', 'Racing', 'Platform', 'Simulation', 'Fighting', 'Strategy', 'Puzzel'
+	genres = 'Action', 'Sports', 'Misc', 'Role-Playing', 'Shooter', 'Adventure', 'Racing', 'Platform', 'Simulation', 'Fighting', 'Strategy', 'Puzzle'
 	sizes = [20, 14, 10, 9, 8, 8, 8, 5, 5, 5, 4, 4]
 	colors = ['red', 'orangered', 'darkorange', 'orange', 'gold', 'yellow', 'mediumseagreen', 'springgreen', 'dodgerblue', 'deepskyblue', 'mediumorchid', 'violet']
 	fig = plt.figure(figsize =(10, 7))
