@@ -34,26 +34,34 @@ order of operations:
 	select from where group having order limit
 """
 
+
+
+
 '''	
 Main function, drives the program
 '''
 def main():
 	random.seed()								#seed used for the watch function
-	conn = create_connection("vgsales.db")			#connect to the database
+	conn = create_connection("proj.db")			#connect to the database
 	with conn: 
 		menu(0)								#output initial menu
 		val = input()
+		print(val)
 		while val != "q" and val != "quit":
 			if val == "s" or val == "search":
 				search(conn)					#search through the database, sql style
 			elif val == "w" or val == "watch":
 				watch(conn)						#pull up a twitch stream of the game
 			elif val == "d" or val == "data":
-				data_menu(conn)							#look at the data in a visualized format
+				data(conn)							#look at the data in a visualized format
 			time.sleep(.5)
 			menu(0)
 			val = input()					#loop
 		print("Have a great day!")
+
+
+
+
 
 '''
 creates the initial connection with the database
@@ -66,6 +74,9 @@ def create_connection(db_file):
 	except Error as e:
 		print(e)
 	return conn
+
+
+
 
 '''
 search function. Let's the user create a sqlite 
@@ -100,7 +111,7 @@ def search(conn):
 		print("Which attribute?\n")
 		val = att_grab()					#att_grab() grabs a single column
 		str += "group by " + val + " "
-	
+
 		#having operation
 		val = input("Do you want to have a condition for these groupings?\n(yes/no): ")
 		if val == "yes" or val == "y":
@@ -116,16 +127,21 @@ def search(conn):
 	val = input("Do you want a limit to the return values? (y/n): ")
 	if val == "yes" or val == "y":
 		val = input("Limit by how many?: ")		#how many rows does the user want (at max)
+		while not val.isnumeric():
+			val = input("Not a valid number, or you included spaces. Try again: ")
 		str += " limit " + val
-	print("Selection: " + str)
+		
 	#try the string
 	cur = conn.cursor()		#make a cursor object to step through the database
-	#print(str)
+	#print("SELECTION: " + str)
 	cur.execute(str)		#perform the select operations
 
 	rows = cur.fetchall()	#make a list of all the rows selecteed
 
-	pages(rows,liz)
+	pages(rows, liz)		#print all the rows
+
+
+
 
 '''
 Print out many rows in a more standardized format.
@@ -137,9 +153,10 @@ def pages(rows, lizt):
 	while True:
 		table = []
 		header = []
-		print("*******************************************************")
+		print("****************************************************************************")
 		print("Page " + str(page + 1) + " of " +  str(last))
 		x = 0
+		#print("#", end = "\t")
 		while x < len(lizt):
 			if lizt[x] == "*":
 				header.append("Standing")
@@ -160,14 +177,14 @@ def pages(rows, lizt):
 		while x < 50:
 			place = 50 * page + x
 			if place >= len(rows):
-				break
+				break;
 			else:
 				table.append(rows[place])
 			x += 1
 		print(tabulate(table, headers = header))
-		print("****************************************************")
+		print("****************************************************************************")
 		print("(f)irst\t\t(p)revious\t\tPage " + str(page+1) + " of " + str(last) + "\t\t(n)ext\t\t(l)ast")
-		val = input("Or (q)uit")
+		val = input("Or (q)uit ")
 		if val == "f":
 			page = 0
 		elif val == "p":
@@ -181,9 +198,14 @@ def pages(rows, lizt):
 		elif val == "l":
 			page = last - 1
 		elif val == "q":
-			break
+			break;
 		else:
 			print("Not a valid string")
+
+
+
+
+
 
 '''
 Process a line, which is a string of numbers and letters, 
@@ -225,31 +247,37 @@ def process(parser):
 			return err						#quick return the error
 	return liz
 
+
+
+
 '''
 Create a long list of conditionals. Or just one,
 depending on the single bool
 '''
-def conditions(clone, single):
+def conditions(line, single):
 	looped = False				#bool to see if we've entered the loop or not
-	if not single:			#if we're not just going through once...	
-		clone += " where "	#add the where
+	clone = ""
+	if single:
+		clone = " having "
+	else:
+		clone = " where "
 
 	print("\nDo you want a certain condition on the data?\n")
 	menu(3)						#conditional menus
 	val = input()
 	while val != "6":			#while we haven't exited
-		looped = True			#we looped!
-    	#print(clone)
-
 		#range measure
 		if val == "1":
-			val = att_grab()				#grab the attribute they want
-			clone += val + " between "		#select encoding
+			attrib = att_grab()				#grab the attribute they want
+			clone += attrib + " between "		#select encoding
 			val = input("Enter the between values, seperated by a space: ")
 			split = val.find(" ")			#find space between the range
 			first = val[:split]				#first one
 			last = val[split+1:]			#second one
-			clone += first + " and " + last	#add encoding
+			if attrib.split() == "4":
+				clone += first + " and " + last	#add encoding
+			else:
+				clone += "\'" + first + "\' and \'" + last + "\'"
 
 		#exact match measure
 		elif val == "2":
@@ -319,8 +347,7 @@ def conditions(clone, single):
 				clone += " = " + comparator
 			else:
 				clone += " != " + comparator
-		else:
-			looped = False
+		
 		
 		if (single):				#if we're not supposed to loop after this
 			val = "6"				#force the user to quit
@@ -328,9 +355,16 @@ def conditions(clone, single):
 			print("\nAny other conditions?\n")
 			menu(3)					
 			val = input()	#ask them for more comparisons
-			if val != "6" and looped == True:	
+			if val == "1" or val == "2" or val == "3" or val == "4" or val == "5":	
 				clone += " and "
-	return clone			#send it back
+			#if we actually added a conditional..
+	if len(clone) == 7 or len(clone) == 8:
+		return line
+	else:
+		return line + clone		#send it back
+
+
+
 
 '''
 Asks the user to select an attribute, and sends it back
@@ -364,6 +398,7 @@ def att_grab():
 		print("Not an attribute. Pick better next time.")
 		return att_grab()	#recursively make them return a valid attribute
 
+
 '''
 Makes the encoding for the ordering operation
 '''
@@ -381,6 +416,9 @@ def order(line):
 		val = input("Want to sort further? (yes/no): ")						#ask if they want more
 	return line[:-1]															#return the line, without the final comma
 
+
+
+
 '''
 Watch function! Sends the user to twitch.tv when
 they find a game they want to watch
@@ -388,11 +426,12 @@ they find a game they want to watch
 def watch(conn):
 	line = "https://twitch.tv/directory/game/"											#base URL
 	val = input("Looking for a specific game, or something new? (specific/new)\n")	#ask the user if they want new, or something specific
-	curr = conn.cursor()															#cursor for searching
+	curr = conn.cursor()
+	dummy = False															#cursor for searching
 
 	#specific
 	if val == "specific" or val == "s":
-		val = input("Type of the name of the game in (case-sensitive): ")		#get the specific value
+		val = input("Type of the name of the game in: ")		#get the specific value
 		search = "select name, platform, year, genre from sales where name like '%" + val + "%'"
 		curr.execute(search)														#search for the specific value
 
@@ -410,8 +449,17 @@ def watch(conn):
 		rows = curr.fetchall()						#grab all games
 		x = random.randrange(0,len(rows))			#get a random one
 		line += rows[x][0]
+	else:
+		dummy = True
 
-	webbrowser.open(line)							#go to that page on twitch!
+	if dummy:
+		print("Error: invalid response. Try again next time!")
+	else:
+		#print("URL: " + line)
+		webbrowser.open(line)							#go to that page on twitch!
+
+
+
 
 '''
 Reduces a larger list of games until only one remains, then returns that value
@@ -428,11 +476,11 @@ def reduce(lizt):
 	if val == "y":
 		val = input("Type in a year: ")
 		i = 0
-		while i < len(clone):		    #step through the list
-			if clone[i][2] == int(val):	#if the year value matches their year...
-				i += 1				    #it can stay
+		while i < len(clone):		#step through the list
+			if clone[i][2] == val:	#if the year value matches their year...
+				i += 1				#it can stay
 			else:
-				clone.pop(i)		    #lest, we DESTROY IT
+				clone.pop(i)		#lest, we DESTROY IT
 	
 	#genre
 	elif val == "g":							#the other cases function much the same as the year case
@@ -467,6 +515,7 @@ def reduce(lizt):
 	#This isn't a destroy case: this prints off all the games so far allowed by the search so far
 	elif val == "p":
 		pages(lizt, ["Name","Platform","Year","Genre"])
+
 	
 	else:
 		print("Not valid, asshole.")
@@ -477,6 +526,7 @@ def reduce(lizt):
 		return lizt											#return original list
 	else:				#if they DIDN'T reduce to nothing..
 		return clone	#return their good work!
+
 
 # Gets the sales information from the database
 def get_Sales(game_name, conn):
@@ -842,6 +892,8 @@ def data5(conn):
 	name = input()
 	all_game_names = get_Games(name, conn)
 	genre_chart(name, all_game_names, conn)
+
+	
 '''
 A place to store the large ass strings. These are 
 all various menus used within the program
@@ -921,5 +973,6 @@ Quit? (Q/q)
 '''
 	}
 	print(switcher.get(int, "ERROR"))
+
 
 main()
