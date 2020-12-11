@@ -10,8 +10,6 @@ pip3 install matplotlib
 
 pip3 install tabulate
 
-pip3 install pandas
-
 python3 user_query.py
 
 
