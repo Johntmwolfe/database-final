@@ -721,7 +721,7 @@ def data(conn):
 # Prints a matplotlib bar chart of sales for multiple games.
 def data3(conn):
 	print("")
-	print("How many games would you like to compare?")
+	print("How many games would you like to compare? (You compare between 2 - 5 games)")
 	num = input()
 
 	if num == "2": 
@@ -769,6 +769,8 @@ def data_menu(conn):
 	while val != "Q" and val != "q" and val != "Quit" and val != "quit":
 		if val == "sales" or val == "Sales" or val == "s":
 			data(conn)
+		elif val == "sales2" or val == "Sales2" or val == "s2":
+			data3(conn)
 		elif val == "pie" or val == "Pie" or val == "p":
 			data2(conn)
 		elif val == "name" or val == "Name":
@@ -912,6 +914,7 @@ Which conditional?
 - Welcome to the data section! -
 --------------------------------
 Would you like to see sales data about games? (yes: sales)
+Would you like to see sales data between multiple games? (yes: sales2)
 Would you like to see a pie chart showing the most common genres? (yes: pie)
 Would you like to see how many games contain a certain character or name? (yes: name)
 Quit? (Q/q)
