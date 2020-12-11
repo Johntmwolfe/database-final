@@ -3,11 +3,11 @@ import random
 import sqlite3
 import math
 import webbrowser
-from databases import Database
-#import charts
 import matplotlib.pyplot as plt
+plt.rcParams.update({'figure.max_open_warning': 0})
 from sqlite3 import Error
 from tabulate import tabulate
+import numpy as np 
 """
 information below is summarized on sqlitetutorial.net
 
@@ -528,27 +528,372 @@ def reduce(lizt):
 		return clone	#return their good work!
 
 
-def get_Sales(conn):
+# Gets the sales information from the database
+def get_Sales(game_name, conn):
 	with conn:
-		NA_Sales = "SELECT NA_Sales, EU_Sales, JP_Sales, Other_Sales, Global_Sales FROM sales WHERE Name = 'Wii Sports';"
-		return conn.execute(NA_Sales).fetchone()
+		sales = "SELECT Standing, Name FROM sales WHERE Name LIKE ?;"
+		stuff = conn.execute(sales, ("%{}%".format(game_name),)).fetchall()
+		print("")
+		print("Standing | Name ")
+		print("-------------------------------")
+		for column in stuff:
+			print(f"{column[0]}	 | {column[1]}")
+		print("")
+		print("This game has multiple other games with a smiliar name. Please enter standing number based on the name of the game you are looking for from the table above.")
+		num = input()
+		new_sales2 = "SELECT NA_Sales, EU_Sales, JP_Sales, Other_Sales, Global_Sales FROM sales WHERE Standing = ?;"
+		return conn.execute(new_sales2, (num,)).fetchone()
 
-def bar_sales(sales):
+# Creates the bar diagram for the sales from each region
+def bar_sales(all_sales):
 	x = ["North America", "Europe", "Japan", "Others", "Global"]
-	h = [float(sales[0]), float(sales[1]), float(sales[2]), float(sales[3]), float(sales[4])]
-	c = ["darkred", "orangered", "darkgreen", "navy", "darkviolet"]
-	plt.bar(x, h, color=c)
+	c = ["red", "orange", "gold", "green", "blue"]
+	h = []
+	for index in all_sales:
+		h.append(index)
+	plt.style.use('dark_background')
+	plt.bar(x, h, color=c, linewidth=1, edgecolor="white")
+	plt.annotate(str(h[0]), xy=(0, h[0] + 1))
+	plt.annotate(str(h[1]), xy=(1, h[1] + 1))
+	plt.annotate(str(h[2]), xy=(2, h[2] + 1))
+	plt.annotate(str(h[3]), xy=(3, h[3] + 1))
+	plt.annotate(str(h[4]), xy=(4, h[4] + 1))
 	plt.xlabel("Sales in regions")
 	plt.ylabel("Sales in millions")
-	plt.title("Sales for Wii Sports")
+	plt.title("Video game sales")
+	plt.show()
+
+# Creates the bar diagram for the sales from each region for 2 games
+def bar_sales2(game1, game2, game1_sales, game2_sales):
+	x = ["North America", "Europe", "Japan", "Others", "Global"]
+	h1 = []
+	h2 = []
+	bar_width = 0.35
+	for index in game1_sales:
+		h1.append(index)
+	for index2 in game2_sales:
+		h2.append(index2)
+	bar1 = np.arange(len(x))
+	bar2 = [i+bar_width for i in bar1]
+	plt.style.use('dark_background')
+	plt.bar(bar1, h1, bar_width, color="red", linewidth=1, edgecolor="white", label=game1)
+	plt.bar(bar2, h2, bar_width, color="orange", linewidth=1, edgecolor="white", label=game2)
+	plt.annotate(str(h1[0]), xy=(0, h1[0] + 1))
+	plt.annotate(str(h1[1]), xy=(1, h1[1] + 1))
+	plt.annotate(str(h1[2]), xy=(2, h1[2] + 1))
+	plt.annotate(str(h1[3]), xy=(3, h1[3] + 1))
+	plt.annotate(str(h1[4]), xy=(4, h1[4] + 1))
+	plt.annotate(str(h2[0]), xy=(0.35, h2[0] + 1))
+	plt.annotate(str(h2[1]), xy=(1.35, h2[1] + 1))
+	plt.annotate(str(h2[2]), xy=(2.35, h2[2] + 1))
+	plt.annotate(str(h2[3]), xy=(3.35, h2[3] + 1))
+	plt.annotate(str(h2[4]), xy=(4.35, h2[4] + 1))
+	plt.xlabel("Sales in regions")
+	plt.ylabel("Sales in millions")
+	plt.title("Video game sales")
+	plt.xticks(bar1+bar_width/2, x)
+	plt.legend()
+	plt.show()
+
+# Creates the bar diagram for the sales from each region for 3 games
+def bar_sales3(game1, game2, game3, game1_sales, game2_sales, game3_sales):
+	x = ["North America", "Europe", "Japan", "Others", "Global"]
+	h1 = []
+	h2 = []
+	h3 = []
+	bar_width = 0.2
+	for index in game1_sales:
+		h1.append(index)
+	for index2 in game2_sales:
+		h2.append(index2)
+	for index3 in game3_sales:
+		h3.append(index3)
+	bar1 = np.arange(len(x))
+	bar2 = [i+bar_width for i in bar1]
+	bar3 = [i+bar_width for i in bar2]
+	plt.style.use('dark_background')
+	plt.bar(bar1, h1, bar_width, color="red", linewidth=1, edgecolor="white", label=game1)
+	plt.bar(bar2, h2, bar_width, color="orange", linewidth=1, edgecolor="white", label=game2)
+	plt.bar(bar3, h3, bar_width, color="gold", linewidth=1, edgecolor="white", label=game3)
+	plt.annotate(str(h1[0]), xy=(0, h1[0] + 1))
+	plt.annotate(str(h1[1]), xy=(1, h1[1] + 1))
+	plt.annotate(str(h1[2]), xy=(2, h1[2] + 1))
+	plt.annotate(str(h1[3]), xy=(3, h1[3] + 1))
+	plt.annotate(str(h1[4]), xy=(4, h1[4] + 1))
+
+	plt.annotate(str(h2[0]), xy=(0.2, h2[0] + 1))
+	plt.annotate(str(h2[1]), xy=(1.2, h2[1] + 1))
+	plt.annotate(str(h2[2]), xy=(2.2, h2[2] + 1))
+	plt.annotate(str(h2[3]), xy=(3.2, h2[3] + 1))
+	plt.annotate(str(h2[4]), xy=(4.2, h2[4] + 1))
+
+	plt.annotate(str(h3[0]), xy=(0.4, h3[0] + 1))
+	plt.annotate(str(h3[1]), xy=(1.4, h3[1] + 1))
+	plt.annotate(str(h3[2]), xy=(2.4, h3[2] + 1))
+	plt.annotate(str(h3[3]), xy=(3.4, h3[3] + 1))
+	plt.annotate(str(h3[4]), xy=(4.4, h3[4] + 1))
+	plt.xlabel("Sales in regions")
+	plt.ylabel("Sales in millions")
+	plt.title("Video game sales")
+	plt.xticks(bar1+bar_width, x)
+	plt.legend()
+	plt.show()
+
+# Creates the bar diagram for the sales from each region for 4 games
+def bar_sales4(game1, game2, game3, game4, game1_sales, game2_sales, game3_sales, game4_sales):
+	x = ["North America", "Europe", "Japan", "Others", "Global"]
+	h1 = []
+	h2 = []
+	h3 = []
+	h4 = []
+	bar_width = 0.2
+	for index in game1_sales:
+		h1.append(index)
+	for index2 in game2_sales:
+		h2.append(index2)
+	for index3 in game3_sales:
+		h3.append(index3)
+	for index4 in game4_sales:
+		h4.append(index4)
+	bar1 = np.arange(len(x))
+	bar2 = [i+bar_width for i in bar1]
+	bar3 = [i+bar_width for i in bar2]
+	bar4 = [i+bar_width for i in bar3]
+	plt.style.use('dark_background')
+	plt.bar(bar1, h1, bar_width, color="red", linewidth=1, edgecolor="white", label=game1)
+	plt.bar(bar2, h2, bar_width, color="orange", linewidth=1, edgecolor="white", label=game2)
+	plt.bar(bar3, h3, bar_width, color="gold", linewidth=1, edgecolor="white", label=game3)
+	plt.bar(bar4, h4, bar_width, color="green", linewidth=1, edgecolor="white", label=game4)
+	plt.annotate(str(h1[0]), xy=(0, h1[0] + 1))
+	plt.annotate(str(h1[1]), xy=(1, h1[1] + 1))
+	plt.annotate(str(h1[2]), xy=(2, h1[2] + 1))
+	plt.annotate(str(h1[3]), xy=(3, h1[3] + 1))
+	plt.annotate(str(h1[4]), xy=(4, h1[4] + 1))
+
+	plt.annotate(str(h2[0]), xy=(0.2, h2[0] + 1))
+	plt.annotate(str(h2[1]), xy=(1.2, h2[1] + 1))
+	plt.annotate(str(h2[2]), xy=(2.2, h2[2] + 1))
+	plt.annotate(str(h2[3]), xy=(3.2, h2[3] + 1))
+	plt.annotate(str(h2[4]), xy=(4.2, h2[4] + 1))
+	
+	plt.annotate(str(h3[0]), xy=(0.4, h3[0] + 1))
+	plt.annotate(str(h3[1]), xy=(1.4, h3[1] + 1))
+	plt.annotate(str(h3[2]), xy=(2.4, h3[2] + 1))
+	plt.annotate(str(h3[3]), xy=(3.4, h3[3] + 1))
+	plt.annotate(str(h3[4]), xy=(4.4, h3[4] + 1))
+
+	plt.annotate(str(h4[0]), xy=(0.6, h4[0] + 1))
+	plt.annotate(str(h4[1]), xy=(1.6, h4[1] + 1))
+	plt.annotate(str(h4[2]), xy=(2.6, h4[2] + 1))
+	plt.annotate(str(h4[3]), xy=(3.6, h4[3] + 1))
+	plt.annotate(str(h4[4]), xy=(4.6, h4[4] + 1))
+	plt.xlabel("Sales in regions")
+	plt.ylabel("Sales in millions")
+	plt.title("Video game sales")
+	plt.xticks(bar1+0.3, x)
+	plt.legend()
+	plt.show()
+
+# Creates the bar diagram for the sales from each region for 5 games
+def bar_sales5(game1, game2, game3, game4, game5, game1_sales, game2_sales, game3_sales, game4_sales, game5_sales):
+	x = ["North America", "Europe", "Japan", "Others", "Global"]
+	h1 = []
+	h2 = []
+	h3 = []
+	h4 = []
+	h5 = []
+	bar_width = 0.15
+	for index in game1_sales:
+		h1.append(index)
+	for index2 in game2_sales:
+		h2.append(index2)
+	for index3 in game3_sales:
+		h3.append(index3)
+	for index4 in game4_sales:
+		h4.append(index4)
+	for index5 in game5_sales:
+		h5.append(index5)
+	bar1 = np.arange(len(x))
+	bar2 = [i+bar_width for i in bar1]
+	bar3 = [i+bar_width for i in bar2]
+	bar4 = [i+bar_width for i in bar3]
+	bar5 = [i+bar_width for i in bar4]
+	plt.style.use('dark_background')
+	plt.bar(bar1, h1, bar_width, color="red", linewidth=1, edgecolor="white", label=game1)
+	plt.bar(bar2, h2, bar_width, color="orange", linewidth=1, edgecolor="white", label=game2)
+	plt.bar(bar3, h3, bar_width, color="gold", linewidth=1, edgecolor="white", label=game3)
+	plt.bar(bar4, h4, bar_width, color="green", linewidth=1, edgecolor="white", label=game4)
+	plt.bar(bar5, h5, bar_width, color="blue", linewidth=1, edgecolor="white", label=game5)
+	plt.annotate(str(h1[0]), xy=(0, h1[0] + 1))
+	plt.annotate(str(h1[1]), xy=(1, h1[1] + 1))
+	plt.annotate(str(h1[2]), xy=(2, h1[2] + 1))
+	plt.annotate(str(h1[3]), xy=(3, h1[3] + 1))
+	plt.annotate(str(h1[4]), xy=(4, h1[4] + 1))
+
+	plt.annotate(str(h2[0]), xy=(0.15, h2[0] + 1))
+	plt.annotate(str(h2[1]), xy=(1.15, h2[1] + 1))
+	plt.annotate(str(h2[2]), xy=(2.15, h2[2] + 1))
+	plt.annotate(str(h2[3]), xy=(3.15, h2[3] + 1))
+	plt.annotate(str(h2[4]), xy=(4.15, h2[4] + 1))
+	
+	plt.annotate(str(h3[0]), xy=(0.3, h3[0] + 1))
+	plt.annotate(str(h3[1]), xy=(1.3, h3[1] + 1))
+	plt.annotate(str(h3[2]), xy=(2.3, h3[2] + 1))
+	plt.annotate(str(h3[3]), xy=(3.3, h3[3] + 1))
+	plt.annotate(str(h3[4]), xy=(4.3, h3[4] + 1))
+
+	plt.annotate(str(h4[0]), xy=(0.45, h4[0] + 1))
+	plt.annotate(str(h4[1]), xy=(1.45, h4[1] + 1))
+	plt.annotate(str(h4[2]), xy=(2.45, h4[2] + 1))
+	plt.annotate(str(h4[3]), xy=(3.45, h4[3] + 1))
+	plt.annotate(str(h4[4]), xy=(4.45, h4[4] + 1))
+
+	plt.annotate(str(h5[0]), xy=(0.6, h5[0] + 1))
+	plt.annotate(str(h5[1]), xy=(1.6, h5[1] + 1))
+	plt.annotate(str(h5[2]), xy=(2.6, h5[2] + 1))
+	plt.annotate(str(h5[3]), xy=(3.6, h5[3] + 1))
+	plt.annotate(str(h5[4]), xy=(4.6, h5[4] + 1))
+	plt.xlabel("Sales in regions")
+	plt.ylabel("Sales in millions")
+	plt.title("Video game sales")
+	plt.xticks(bar1+0.3, x)
+	plt.legend()
 	plt.show()
 
 # Prints a matplotlib bar chart of sales from all parts of the world.
 def data(conn):
-	print("Which video game do you want to see for sales data?")
-	all_sales = get_Sales(conn)
+	print("")
+	print("Which video game would you like to see for sales data?")
+	game_name = input()
+	all_sales = get_Sales(game_name, conn)
 	bar_sales(all_sales)
 
+# Prints a matplotlib bar chart of sales for multiple games.
+def data3(conn):
+	print("")
+	print("How many games would you like to compare? (You compare between 2 - 5 games)")
+	num = input()
+
+	if num == "2": 
+		game1 = input("Enter in video game 1 here --> ")
+		game1_sales = get_Sales(game1, conn)
+		game2 = input("Enter in video game 2 here --> ")
+		game2_sales = get_Sales(game2, conn)
+		bar_sales2(game1, game2, game1_sales, game2_sales)
+	elif num == "3":
+		game1 = input("Enter in video game 1 here --> ")
+		game1_sales = get_Sales(game1, conn)
+		game2 = input("Enter in video game 2 here --> ")
+		game2_sales = get_Sales(game2, conn)
+		game3 = input("Enter in video game 3 here --> ")
+		game3_sales = get_Sales(game3, conn)
+		bar_sales3(game1, game2, game3, game1_sales, game2_sales, game3_sales)
+	elif num == "4":
+		game1 = input("Enter in video game 1 here --> ")
+		game1_sales = get_Sales(game1, conn)
+		game2 = input("Enter in video game 2 here --> ")
+		game2_sales = get_Sales(game2, conn)
+		game3 = input("Enter in video game 3 here --> ")
+		game3_sales = get_Sales(game3, conn)
+		game4 = input("Enter in video game 4 here --> ")
+		game4_sales = get_Sales(game4, conn)
+		bar_sales4(game1, game2, game3, game4, game1_sales, game2_sales, game3_sales, game4_sales)
+	elif num == "5":
+		game1 = input("Enter in video game 1 here --> ")
+		game1_sales = get_Sales(game1, conn)
+		game2 = input("Enter in video game 2 here --> ")
+		game2_sales = get_Sales(game2, conn)
+		game3 = input("Enter in video game 3 here --> ")
+		game3_sales = get_Sales(game3, conn)
+		game4 = input("Enter in video game 4 here --> ")
+		game4_sales = get_Sales(game4, conn)
+		game5 = input("Enter in video game 5 here --> ")
+		game5_sales = get_Sales(game5, conn)
+		bar_sales5(game1, game2, game3, game4, game5, game1_sales, game2_sales, game3_sales, game4_sales, game5_sales)
+	else:
+		print("Invalid input please put a number between 2 and 5.")
+
+def data_menu(conn):
+	menu(5)
+	val = input()
+	while val != "Q" and val != "q" and val != "Quit" and val != "quit":
+		if val == "sales" or val == "Sales" or val == "s":
+			data(conn)
+		elif val == "sales2" or val == "Sales2" or val == "s2":
+			data3(conn)
+		elif val == "pie" or val == "Pie" or val == "p":
+			data2(conn)
+		elif val == "name" or val == "Name":
+			data5(conn)
+		time.sleep(.5)
+		menu(5)
+		val = input()
+		if val == "Q" or val == "q" or val == "quit" or val == "Quit":
+			print("\nHeading back to main menu ...")
+
+# pie chart data
+def data2(conn):
+	genres = 'Action', 'Sports', 'Misc', 'Role-Playing', 'Shooter', 'Adventure', 'Racing', 'Platform', 'Simulation', 'Fighting', 'Strategy', 'Puzzel'
+	sizes = [20, 14, 10, 9, 8, 8, 8, 5, 5, 5, 4, 4]
+	colors = ['red', 'orangered', 'darkorange', 'orange', 'gold', 'yellow', 'mediumseagreen', 'springgreen', 'dodgerblue', 'deepskyblue', 'mediumorchid', 'violet']
+	fig = plt.figure(figsize =(10, 7))
+	plt.pie(sizes, labels = genres, autopct='%.1f%%', colors=colors)
+	plt.title("Most Common Genres:")
+	plt.legend(genres, loc="upper right")
+	plt.show()
+
+def get_Games(name, conn):
+	with conn:
+		game_genres = "SELECT Name, Genre FROM sales WHERE Name LIKE ?;"
+		return conn.execute(game_genres, ("%{}%".format(name),)).fetchone()
+
+def genre_chart(name, all_game_names, conn):
+	x = ["Action", "Sports", "Misc", "Role-Playing", "Shooter", "Adventure", "Racing", "Platform", "Simulation", "Fighting", "Strategy", "Puzzle"]
+	y = []
+	for games in all_game_names:
+		y.append(games)
+	count_y = []
+	action = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Action'", ("%{}%".format(name),)).fetchone()
+	count_y.append(action)
+	sports = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Sports'", ("%{}%".format(name),)).fetchone()
+	count_y.append(sports)
+	misc = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Misc'", ("%{}%".format(name),)).fetchone()
+	count_y.append(misc)
+	role = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Role-Playing'", ("%{}%".format(name),)).fetchone()
+	count_y.append(role)
+	shooter = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Shooter'", ("%{}%".format(name),)).fetchone()
+	count_y.append(shooter)
+	adventure = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Adventure'", ("%{}%".format(name),)).fetchone()
+	count_y.append(adventure)
+	race = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Racing'", ("%{}%".format(name),)).fetchone()
+	count_y.append(race)
+	platform = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Platform'", ("%{}%".format(name),)).fetchone()
+	count_y.append(platform)
+	sim = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Simulation'", ("%{}%".format(name),)).fetchone()
+	count_y.append(sim)
+	fight = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Fighting'", ("%{}%".format(name),)).fetchone()
+	count_y.append(fight)
+	strat = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Strategy'", ("%{}%".format(name),)).fetchone()
+	count_y.append(strat)
+	puzzle = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Puzzle'", ("%{}%".format(name),)).fetchone()
+	count_y.append(puzzle)
+
+	y2 = [i[0] for i in count_y]
+	explode = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
+	colors = ['red', 'orangered', 'darkorange', 'orange', 'gold', 'yellow', 'mediumseagreen', 'springgreen', 'dodgerblue', 'deepskyblue', 'mediumorchid', 'violet']
+	fig = plt.figure(figsize =(13, 10))
+	plt.pie(y2, autopct='%.2f%%', explode=explode, colors=colors)
+	plt.title("Most Popular Genres Containing - " + name)
+	plt.legend(x, loc="upper right")
+	plt.show()
+
+def data5(conn):
+	print("Which character/name/phrase would you like to see data for? (case specific) ")
+	name = input()
+	all_game_names = get_Games(name, conn)
+	genre_chart(name, all_game_names, conn)
+
+	
 '''
 A place to store the large ass strings. These are 
 all various menus used within the program
@@ -557,11 +902,15 @@ def menu(int):
 	switcher = {
 		0: 
 '''
-Welcome to the video game sales database!
-What would you like?
+*********************************************
+* Welcome to the video game sales database! *
+*********************************************
+
+What would you like to do?
+
 Search for games (search/s)
 Watch a particular game (watch/w)
-Look through sales data about games (data/d)
+Look through data about games (data/d)
 Quit application (quit/q)
 		''',
 		
@@ -587,7 +936,7 @@ Print the games you have so far(p)
 8. European Sales
 9. Japan Sales
 a. Other sales
-b. Global sales
+b.Global sales
 Type the letters and numbers you want, in the order you want them.\nSearch(if you want them all, put a *): ",
 ''',
 
@@ -610,9 +959,20 @@ Which conditional?
 4. <=
 5. =
 6. !=
+''',
+		5:
+'''
+--------------------------------
+- Welcome to the data section! -
+--------------------------------
+Would you like to see sales data about games? (yes: sales)
+Would you like to see sales data between multiple games? (yes: sales2)
+Would you like to see a pie chart showing the most common genres? (yes: pie)
+Would you like to see how many games contain a certain character or name? (yes: name)
+Quit? (Q/q)
 '''
 	}
 	print(switcher.get(int, "ERROR"))
-	#print switcher.get(int, "ERROR")
+
 
 main()
