@@ -34,9 +34,6 @@ order of operations:
 	select from where group having order limit
 """
 
-
-
-
 '''	
 Main function, drives the program
 '''
@@ -69,9 +66,6 @@ def create_connection(db_file):
 	except Error as e:
 		print(e)
 	return conn
-
-
-
 
 '''
 search function. Let's the user create a sqlite 
@@ -133,9 +127,6 @@ def search(conn):
 
 	pages(rows,liz)
 
-
-
-
 '''
 Print out many rows in a more standardized format.
 User can tab back and forth through the rows as they choose
@@ -194,11 +185,6 @@ def pages(rows, lizt):
 		else:
 			print("Not a valid string")
 
-
-
-
-
-
 '''
 Process a line, which is a string of numbers and letters, 
 that represents a list of attributes the user wants. The
@@ -239,9 +225,6 @@ def process(parser):
 			return err						#quick return the error
 	return liz
 
-
-
-
 '''
 Create a long list of conditionals. Or just one,
 depending on the single bool
@@ -256,7 +239,7 @@ def conditions(clone, single):
 	val = input()
 	while val != "6":			#while we haven't exited
 		looped = True			#we looped!
-        #print(clone)
+    	#print(clone)
 
 		#range measure
 		if val == "1":
@@ -337,7 +320,7 @@ def conditions(clone, single):
 			else:
 				clone += " != " + comparator
 		else:
-            looped = False
+			looped = False
 		
 		if (single):				#if we're not supposed to loop after this
 			val = "6"				#force the user to quit
@@ -348,9 +331,6 @@ def conditions(clone, single):
 			if val != "6" and looped == True:	
 				clone += " and "
 	return clone			#send it back
-
-
-
 
 '''
 Asks the user to select an attribute, and sends it back
@@ -384,7 +364,6 @@ def att_grab():
 		print("Not an attribute. Pick better next time.")
 		return att_grab()	#recursively make them return a valid attribute
 
-
 '''
 Makes the encoding for the ordering operation
 '''
@@ -401,9 +380,6 @@ def order(line):
 			print("Try again, idiot.")
 		val = input("Want to sort further? (yes/no): ")						#ask if they want more
 	return line[:-1]															#return the line, without the final comma
-
-
-
 
 '''
 Watch function! Sends the user to twitch.tv when
@@ -436,9 +412,6 @@ def watch(conn):
 		line += rows[x][0]
 
 	webbrowser.open(line)							#go to that page on twitch!
-
-
-
 
 '''
 Reduces a larger list of games until only one remains, then returns that value
@@ -510,26 +483,34 @@ def get_Sales(game_name, conn):
 	with conn:
 		sales = "SELECT Standing, Name FROM sales WHERE Name LIKE ?;"
 		stuff = conn.execute(sales, ("%{}%".format(game_name),)).fetchall()
+		print("")
 		print("Standing | Name ")
 		print("-------------------------------")
 		for column in stuff:
 			print(f"{column[0]}	 | {column[1]}")
-		print("This game has multiple other games with a smiliar name. Please enter standing number based on the name of the game you are looking for from the table above. If the table is empty then just retype the name of the game.")
+		print("")
+		print("This game has multiple other games with a smiliar name. Please enter standing number based on the name of the game you are looking for from the table above.")
 		num = input()
 		new_sales2 = "SELECT NA_Sales, EU_Sales, JP_Sales, Other_Sales, Global_Sales FROM sales WHERE Standing = ?;"
 		return conn.execute(new_sales2, (num,)).fetchone()
 
 # Creates the bar diagram for the sales from each region
-def bar_sales(game_name, all_sales):
+def bar_sales(all_sales):
 	x = ["North America", "Europe", "Japan", "Others", "Global"]
+	c = ["red", "orange", "gold", "green", "blue"]
 	h = []
 	for index in all_sales:
 		h.append(index)
-	c = ["darkred", "orangered", "darkgreen", "navy", "darkviolet"]
-	plt.bar(x, h, color=c)
+	plt.style.use('dark_background')
+	plt.bar(x, h, color=c, linewidth=1, edgecolor="white")
+	plt.annotate(str(h[0]), xy=(0, h[0] + 1))
+	plt.annotate(str(h[1]), xy=(1, h[1] + 1))
+	plt.annotate(str(h[2]), xy=(2, h[2] + 1))
+	plt.annotate(str(h[3]), xy=(3, h[3] + 1))
+	plt.annotate(str(h[4]), xy=(4, h[4] + 1))
 	plt.xlabel("Sales in regions")
 	plt.ylabel("Sales in millions")
-	plt.title("Sales for the video game: " + game_name)
+	plt.title("Video game sales")
 	plt.show()
 
 # Creates the bar diagram for the sales from each region for 2 games
@@ -544,8 +525,19 @@ def bar_sales2(game1, game2, game1_sales, game2_sales):
 		h2.append(index2)
 	bar1 = np.arange(len(x))
 	bar2 = [i+bar_width for i in bar1]
-	plt.bar(bar1, h1, bar_width, color="orangered", label=game1)
-	plt.bar(bar2, h2, bar_width, color="navy", label=game2)
+	plt.style.use('dark_background')
+	plt.bar(bar1, h1, bar_width, color="red", linewidth=1, edgecolor="white", label=game1)
+	plt.bar(bar2, h2, bar_width, color="orange", linewidth=1, edgecolor="white", label=game2)
+	plt.annotate(str(h1[0]), xy=(0, h1[0] + 1))
+	plt.annotate(str(h1[1]), xy=(1, h1[1] + 1))
+	plt.annotate(str(h1[2]), xy=(2, h1[2] + 1))
+	plt.annotate(str(h1[3]), xy=(3, h1[3] + 1))
+	plt.annotate(str(h1[4]), xy=(4, h1[4] + 1))
+	plt.annotate(str(h2[0]), xy=(0.35, h2[0] + 1))
+	plt.annotate(str(h2[1]), xy=(1.35, h2[1] + 1))
+	plt.annotate(str(h2[2]), xy=(2.35, h2[2] + 1))
+	plt.annotate(str(h2[3]), xy=(3.35, h2[3] + 1))
+	plt.annotate(str(h2[4]), xy=(4.35, h2[4] + 1))
 	plt.xlabel("Sales in regions")
 	plt.ylabel("Sales in millions")
 	plt.title("Video game sales")
@@ -569,9 +561,27 @@ def bar_sales3(game1, game2, game3, game1_sales, game2_sales, game3_sales):
 	bar1 = np.arange(len(x))
 	bar2 = [i+bar_width for i in bar1]
 	bar3 = [i+bar_width for i in bar2]
-	plt.bar(bar1, h1, bar_width, color="red", label=game1)
-	plt.bar(bar2, h2, bar_width, color="orangered", label=game2)
-	plt.bar(bar3, h3, bar_width, color="gold", label=game3)
+	plt.style.use('dark_background')
+	plt.bar(bar1, h1, bar_width, color="red", linewidth=1, edgecolor="white", label=game1)
+	plt.bar(bar2, h2, bar_width, color="orange", linewidth=1, edgecolor="white", label=game2)
+	plt.bar(bar3, h3, bar_width, color="gold", linewidth=1, edgecolor="white", label=game3)
+	plt.annotate(str(h1[0]), xy=(0, h1[0] + 1))
+	plt.annotate(str(h1[1]), xy=(1, h1[1] + 1))
+	plt.annotate(str(h1[2]), xy=(2, h1[2] + 1))
+	plt.annotate(str(h1[3]), xy=(3, h1[3] + 1))
+	plt.annotate(str(h1[4]), xy=(4, h1[4] + 1))
+
+	plt.annotate(str(h2[0]), xy=(0.2, h2[0] + 1))
+	plt.annotate(str(h2[1]), xy=(1.2, h2[1] + 1))
+	plt.annotate(str(h2[2]), xy=(2.2, h2[2] + 1))
+	plt.annotate(str(h2[3]), xy=(3.2, h2[3] + 1))
+	plt.annotate(str(h2[4]), xy=(4.2, h2[4] + 1))
+
+	plt.annotate(str(h3[0]), xy=(0.4, h3[0] + 1))
+	plt.annotate(str(h3[1]), xy=(1.4, h3[1] + 1))
+	plt.annotate(str(h3[2]), xy=(2.4, h3[2] + 1))
+	plt.annotate(str(h3[3]), xy=(3.4, h3[3] + 1))
+	plt.annotate(str(h3[4]), xy=(4.4, h3[4] + 1))
 	plt.xlabel("Sales in regions")
 	plt.ylabel("Sales in millions")
 	plt.title("Video game sales")
@@ -599,10 +609,34 @@ def bar_sales4(game1, game2, game3, game4, game1_sales, game2_sales, game3_sales
 	bar2 = [i+bar_width for i in bar1]
 	bar3 = [i+bar_width for i in bar2]
 	bar4 = [i+bar_width for i in bar3]
-	plt.bar(bar1, h1, bar_width, color="red", label=game1)
-	plt.bar(bar2, h2, bar_width, color="orangered", label=game2)
-	plt.bar(bar3, h3, bar_width, color="gold", label=game3)
-	plt.bar(bar4, h4, bar_width, color="seagreen", label=game4)
+	plt.style.use('dark_background')
+	plt.bar(bar1, h1, bar_width, color="red", linewidth=1, edgecolor="white", label=game1)
+	plt.bar(bar2, h2, bar_width, color="orange", linewidth=1, edgecolor="white", label=game2)
+	plt.bar(bar3, h3, bar_width, color="gold", linewidth=1, edgecolor="white", label=game3)
+	plt.bar(bar4, h4, bar_width, color="green", linewidth=1, edgecolor="white", label=game4)
+	plt.annotate(str(h1[0]), xy=(0, h1[0] + 1))
+	plt.annotate(str(h1[1]), xy=(1, h1[1] + 1))
+	plt.annotate(str(h1[2]), xy=(2, h1[2] + 1))
+	plt.annotate(str(h1[3]), xy=(3, h1[3] + 1))
+	plt.annotate(str(h1[4]), xy=(4, h1[4] + 1))
+
+	plt.annotate(str(h2[0]), xy=(0.2, h2[0] + 1))
+	plt.annotate(str(h2[1]), xy=(1.2, h2[1] + 1))
+	plt.annotate(str(h2[2]), xy=(2.2, h2[2] + 1))
+	plt.annotate(str(h2[3]), xy=(3.2, h2[3] + 1))
+	plt.annotate(str(h2[4]), xy=(4.2, h2[4] + 1))
+	
+	plt.annotate(str(h3[0]), xy=(0.4, h3[0] + 1))
+	plt.annotate(str(h3[1]), xy=(1.4, h3[1] + 1))
+	plt.annotate(str(h3[2]), xy=(2.4, h3[2] + 1))
+	plt.annotate(str(h3[3]), xy=(3.4, h3[3] + 1))
+	plt.annotate(str(h3[4]), xy=(4.4, h3[4] + 1))
+
+	plt.annotate(str(h4[0]), xy=(0.6, h4[0] + 1))
+	plt.annotate(str(h4[1]), xy=(1.6, h4[1] + 1))
+	plt.annotate(str(h4[2]), xy=(2.6, h4[2] + 1))
+	plt.annotate(str(h4[3]), xy=(3.6, h4[3] + 1))
+	plt.annotate(str(h4[4]), xy=(4.6, h4[4] + 1))
 	plt.xlabel("Sales in regions")
 	plt.ylabel("Sales in millions")
 	plt.title("Video game sales")
@@ -634,11 +668,41 @@ def bar_sales5(game1, game2, game3, game4, game5, game1_sales, game2_sales, game
 	bar3 = [i+bar_width for i in bar2]
 	bar4 = [i+bar_width for i in bar3]
 	bar5 = [i+bar_width for i in bar4]
-	plt.bar(bar1, h1, bar_width, color="red", label=game1)
-	plt.bar(bar2, h2, bar_width, color="orangered", label=game2)
-	plt.bar(bar3, h3, bar_width, color="gold", label=game3)
-	plt.bar(bar4, h4, bar_width, color="seagreen", label=game4)
-	plt.bar(bar5, h5, bar_width, color="dodgerblue", label=game5)
+	plt.style.use('dark_background')
+	plt.bar(bar1, h1, bar_width, color="red", linewidth=1, edgecolor="white", label=game1)
+	plt.bar(bar2, h2, bar_width, color="orange", linewidth=1, edgecolor="white", label=game2)
+	plt.bar(bar3, h3, bar_width, color="gold", linewidth=1, edgecolor="white", label=game3)
+	plt.bar(bar4, h4, bar_width, color="green", linewidth=1, edgecolor="white", label=game4)
+	plt.bar(bar5, h5, bar_width, color="blue", linewidth=1, edgecolor="white", label=game5)
+	plt.annotate(str(h1[0]), xy=(0, h1[0] + 1))
+	plt.annotate(str(h1[1]), xy=(1, h1[1] + 1))
+	plt.annotate(str(h1[2]), xy=(2, h1[2] + 1))
+	plt.annotate(str(h1[3]), xy=(3, h1[3] + 1))
+	plt.annotate(str(h1[4]), xy=(4, h1[4] + 1))
+
+	plt.annotate(str(h2[0]), xy=(0.15, h2[0] + 1))
+	plt.annotate(str(h2[1]), xy=(1.15, h2[1] + 1))
+	plt.annotate(str(h2[2]), xy=(2.15, h2[2] + 1))
+	plt.annotate(str(h2[3]), xy=(3.15, h2[3] + 1))
+	plt.annotate(str(h2[4]), xy=(4.15, h2[4] + 1))
+	
+	plt.annotate(str(h3[0]), xy=(0.3, h3[0] + 1))
+	plt.annotate(str(h3[1]), xy=(1.3, h3[1] + 1))
+	plt.annotate(str(h3[2]), xy=(2.3, h3[2] + 1))
+	plt.annotate(str(h3[3]), xy=(3.3, h3[3] + 1))
+	plt.annotate(str(h3[4]), xy=(4.3, h3[4] + 1))
+
+	plt.annotate(str(h4[0]), xy=(0.45, h4[0] + 1))
+	plt.annotate(str(h4[1]), xy=(1.45, h4[1] + 1))
+	plt.annotate(str(h4[2]), xy=(2.45, h4[2] + 1))
+	plt.annotate(str(h4[3]), xy=(3.45, h4[3] + 1))
+	plt.annotate(str(h4[4]), xy=(4.45, h4[4] + 1))
+
+	plt.annotate(str(h5[0]), xy=(0.6, h5[0] + 1))
+	plt.annotate(str(h5[1]), xy=(1.6, h5[1] + 1))
+	plt.annotate(str(h5[2]), xy=(2.6, h5[2] + 1))
+	plt.annotate(str(h5[3]), xy=(3.6, h5[3] + 1))
+	plt.annotate(str(h5[4]), xy=(4.6, h5[4] + 1))
 	plt.xlabel("Sales in regions")
 	plt.ylabel("Sales in millions")
 	plt.title("Video game sales")
@@ -648,13 +712,15 @@ def bar_sales5(game1, game2, game3, game4, game5, game1_sales, game2_sales, game
 
 # Prints a matplotlib bar chart of sales from all parts of the world.
 def data(conn):
+	print("")
 	print("Which video game would you like to see for sales data?")
 	game_name = input()
 	all_sales = get_Sales(game_name, conn)
-	bar_sales(game_name, all_sales)
+	bar_sales(all_sales)
 
 # Prints a matplotlib bar chart of sales for multiple games.
 def data3(conn):
+	print("")
 	print("How many games would you like to compare?")
 	num = input()
 
@@ -724,7 +790,6 @@ def data2(conn):
     fig = plt.figure(figsize =(10, 7)) 
     plt.pie(sizes, labels = genres)
     plt.show()
-
 
 '''
 A place to store the large ass strings. These are 
@@ -800,4 +865,3 @@ Quit? (Q/q)
 	print(switcher.get(int, "ERROR"))
 
 main()
-
