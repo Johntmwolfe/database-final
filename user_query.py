@@ -53,7 +53,7 @@ def main():
 			elif val == "2":
 				watch(conn)						#pull up a twitch stream of the game
 			elif val == "3":
-				data(conn)							#look at the data in a visualized format
+				data_menu(conn)							#look at the data in a visualized format
 			time.sleep(.5)
 			menu(0)
 			val = input()					#loop
