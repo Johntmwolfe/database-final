@@ -127,11 +127,13 @@ def search(conn):
 	val = input("Do you want a limit to the return values? (y/n): ")
 	if val == "yes" or val == "y":
 		val = input("Limit by how many?: ")		#how many rows does the user want (at max)
+		while not val.isnumeric():
+			val = input("Not a valid number, or you included spaces. Try again: ")
 		str += " limit " + val
 		
 	#try the string
 	cur = conn.cursor()		#make a cursor object to step through the database
-	print("SELECTION: " + str)
+	#print("SELECTION: " + str)
 	cur.execute(str)		#perform the select operations
 
 	rows = cur.fetchall()	#make a list of all the rows selecteed
@@ -182,7 +184,7 @@ def pages(rows, lizt):
 		print(tabulate(table, headers = header))
 		print("****************************************************************************")
 		print("(f)irst\t\t(p)revious\t\tPage " + str(page+1) + " of " + str(last) + "\t\t(n)ext\t\t(l)ast")
-		val = input("Or (q)uit")
+		val = input("Or (q)uit ")
 		if val == "f":
 			page = 0
 		elif val == "p":
@@ -252,27 +254,30 @@ def process(parser):
 Create a long list of conditionals. Or just one,
 depending on the single bool
 '''
-def conditions(select, single):
+def conditions(line, single):
 	looped = False				#bool to see if we've entered the loop or not
-	clone = select
-	if not single:			#if we're not just going through once...	
-		clone += " where "	#add the where
+	clone = ""
+	if single:
+		clone = " having "
+	else:
+		clone = " where "
 
 	print("\nDo you want a certain condition on the data?\n")
 	menu(3)						#conditional menus
 	val = input()
 	while val != "6":			#while we haven't exited
-		looped = True			#we looped!
-
 		#range measure
 		if val == "1":
-			val = att_grab()				#grab the attribute they want
-			clone += val + " between "		#select encoding
+			attrib = att_grab()				#grab the attribute they want
+			clone += attrib + " between "		#select encoding
 			val = input("Enter the between values, seperated by a space: ")
 			split = val.find(" ")			#find space between the range
 			first = val[:split]				#first one
 			last = val[split+1:]			#second one
-			clone += first + " and " + last	#add encoding
+			if attrib.split() == "4":
+				clone += first + " and " + last	#add encoding
+			else:
+				clone += "\'" + first + "\' and \'" + last + "\'"
 
 		#exact match measure
 		elif val == "2":
@@ -342,8 +347,6 @@ def conditions(select, single):
 				clone += " = " + comparator
 			else:
 				clone += " != " + comparator
-		else:
-			looped = False
 		
 		
 		if (single):				#if we're not supposed to loop after this
@@ -352,12 +355,13 @@ def conditions(select, single):
 			print("\nAny other conditions?\n")
 			menu(3)					
 			val = input()	#ask them for more comparisons
-			if val != "6" and looped == True:	
+			if val == "1" or val == "2" or val == "3" or val == "4" or val == "5":	
 				clone += " and "
-	if looped:					#if we actually added a conditional..
-		return clone			#send it back
+			#if we actually added a conditional..
+	if len(clone) == 7 or len(clone) == 8:
+		return line
 	else:
-		return select			#otherwise, no work was done here. Send back the old.
+		return line + clone		#send it back
 
 
 
@@ -422,11 +426,12 @@ they find a game they want to watch
 def watch(conn):
 	line = "https://twitch.tv/directory/game/"											#base URL
 	val = input("Looking for a specific game, or something new? (specific/new)\n")	#ask the user if they want new, or something specific
-	curr = conn.cursor()															#cursor for searching
+	curr = conn.cursor()
+	dummy = False															#cursor for searching
 
 	#specific
 	if val == "specific" or val == "s":
-		val = input("Type of the name of the game in (case-sensitive): ")		#get the specific value
+		val = input("Type of the name of the game in: ")		#get the specific value
 		search = "select name, platform, year, genre from sales where name like '%" + val + "%'"
 		curr.execute(search)														#search for the specific value
 
@@ -435,7 +440,7 @@ def watch(conn):
 			rows = reduce(rows)			#reduce the amount of rows
 			time.sleep(.2)
 
-			line += row[0][0]
+		line += rows[0][0]
 
 	#new
 	elif val == "new" or val == "n":			
@@ -444,8 +449,14 @@ def watch(conn):
 		rows = curr.fetchall()						#grab all games
 		x = random.randrange(0,len(rows))			#get a random one
 		line += rows[x][0]
+	else:
+		dummy = True
 
-	webbrowser.open(line)							#go to that page on twitch!
+	if dummy:
+		print("Error: invalid response. Try again next time!")
+	else:
+		#print("URL: " + line)
+		webbrowser.open(line)							#go to that page on twitch!
 
 
 
@@ -503,14 +514,8 @@ def reduce(lizt):
 
 	#This isn't a destroy case: this prints off all the games so far allowed by the search so far
 	elif val == "p":
-		if len(lizt) > 50:
-			pages(lizt, ["Name","Platform","Year","Genre"])
-		else:
-			x = 1
-			for row in lizt:			#for every row...
-				print(str(x) + ": ")	#the number of this row
-				print(row)				#the row itself
-				x += 1
+		pages(lizt, ["Name","Platform","Year","Genre"])
+
 	
 	else:
 		print("Not valid, asshole.")
@@ -582,7 +587,7 @@ Print the games you have so far(p)
 8. European Sales
 9. Japan Sales
 a. Other sales
-b.Global sales
+b. Global sales
 Type the letters and numbers you want, in the order you want them.\nSearch(if you want them all, put a *): ",
 ''',
 
