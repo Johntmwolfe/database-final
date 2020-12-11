@@ -109,29 +109,30 @@ def search(conn):
 	str = conditions(str, False)	#compile the conditions the user wants
 
 	#group operation
-	val = input("Do you want to group the output by a certain attribute? \nEnter 1 for yes and 0 for no: ")
+	val = input("Do you want to group the output by a certain attribute? \nEnter 1 for yes and 0 for no:\n")
+	print()
 	if val == "1":
 		print("Which attribute?\n")
 		val = att_grab()					#att_grab() grabs a single column
 		str += "group by " + val + " "
 
 		#having operation
-		val = input("Do you want to have a condition for these groupings?\n(1 for yes and 0 for no): ")
+		val = input("Do you want to have a condition for these groupings?\n(1 for yes and 0 for no):\n")
 		if val == "1":
 			str = conditions(str,True)	#adds only one conditional (true prevents looping)
 
 	#order by operation
-	val = input("Do you want the output sorted?\n(1 for yes and 0 for no): ")
+	val = input("Do you want the output sorted?\n(1 for yes and 0 for no):\n")
 	if val == "1":
 		str += " order by"
 		str = order(str)				#loops for how many orders the user wants
 
 	#limit operation
-	val = input("Do you want a limit to the return values? (1 for yes and 0 for no): ")
+	val = input("Do you want a limit to the return values? (1 for yes and 0 for no):\n")
 	if val == "1":
 		val = input("Limit by how many?: ")		#how many rows does the user want (at max)
 		while not val.isnumeric():
-			val = input("Not a valid number, or you included spaces. Try again: ")
+			val = input("Not a valid number, or you included spaces. Try again:\n")
 		str += " limit " + val
 		
 	#try the string
@@ -429,13 +430,13 @@ they find a game they want to watch
 def watch(conn):
 	line = "https://twitch.tv/directory/game/"											#base URL
 	print("**********************************")
-	print("* Welcome to the watch section!	*")
-	print("*								*")
+	print("*  Welcome to the watch section! *")
+	print()
 	print("* Here you will be able to watch	*")
-	print("*   a stream via Twitch of any	*")
-	print("*	  game you would like!		*")
+	print("*   a stream via Twitch of any   *")
+	print("*      game you would like!      *")
 	print("**********************************")
-	val = input("\nAre you looking for a specific game, or something new? (1 for specific, 0 for new)\n")	#ask the user if they want new, or something specific
+	val = input("\nAre you looking for a specific game, or something new?\n(1 for specific, 0 for new)\n")	#ask the user if they want new, or something specific
 	curr = conn.cursor()
 	dummy = False															#cursor for searching
 
@@ -483,7 +484,7 @@ def reduce(lizt):
 	val = input()			#see how the user wants to further remove rows
 	
 	#year
-	if val == "y":
+	if val == "2":
 		val = input("Type in a year: ")
 		i = 0
 		while i < len(clone):		#step through the list
@@ -493,7 +494,7 @@ def reduce(lizt):
 				clone.pop(i)		#lest, we DESTROY IT
 	
 	#genre
-	elif val == "g":							#the other cases function much the same as the year case
+	elif val == "3":							#the other cases function much the same as the year case
 		val = input("Type in the genre: ")
 		i = 0
 		while i < len(clone):
@@ -503,7 +504,7 @@ def reduce(lizt):
 				clone.pop(i)
 
 	#platform
-	elif val == "c":
+	elif val == "4":
 		val = input("Type in a console: ")
 		i = 0
 		while i < len(clone):
@@ -513,7 +514,7 @@ def reduce(lizt):
 				clone.pop(i)
 
 	#name case
-	elif val == "n":
+	elif val == "1":
 		val = input("Type in a title: ")
 		i = 0
 		while i < len(clone):
@@ -523,7 +524,7 @@ def reduce(lizt):
 				clone.pop(i)
 
 	#This isn't a destroy case: this prints off all the games so far allowed by the search so far
-	elif val == "p":
+	elif val == "5":
 		pages(lizt, ["Name","Platform","Year","Genre"])
 
 	
@@ -543,6 +544,9 @@ def get_Sales(game_name, conn):
 	with conn:
 		sales = "SELECT Standing, Name FROM sales WHERE Name LIKE ?;"
 		stuff = conn.execute(sales, ("%{}%".format(game_name),)).fetchall()
+		if len(stuff) == 0:
+			print("No game matches that name. Try again.")
+			return []
 		print("")
 		print("Standing | Name ")
 		print("-------------------------------")
@@ -772,10 +776,12 @@ def bar_sales5(game1, game2, game3, game4, game5, game1_sales, game2_sales, game
 
 # Prints a matplotlib bar chart of sales from all parts of the world.
 def data(conn):
-	print("")
-	print("Which video game would you like to see for sales data?")
-	game_name = input()
-	all_sales = get_Sales(game_name, conn)
+	all_sales = []
+	while len(all_sales) == 0:
+		print("")
+		print("Which video game would you like to see for sales data?")
+		game_name = input()
+		all_sales = get_Sales(game_name, conn)
 	bar_sales(all_sales)
 
 # Prints a matplotlib bar chart of sales for multiple games.
@@ -785,40 +791,68 @@ def data3(conn):
 	num = input()
 
 	if num == "2": 
-		game1 = input("Enter in video game 1 here --> ")
-		game1_sales = get_Sales(game1, conn)
-		game2 = input("Enter in video game 2 here --> ")
-		game2_sales = get_Sales(game2, conn)
+		game1_sales = []
+		game2_sales = []
+		while len(game1_sales) == 0:
+			game1 = input("Enter in video game 1 here --> ")
+			game1_sales = get_Sales(game1, conn)
+		while len(game2_sales) == 0:
+			game2 = input("Enter in video game 2 here --> ")
+			game2_sales = get_Sales(game2, conn)
 		bar_sales2(game1, game2, game1_sales, game2_sales)
 	elif num == "3":
-		game1 = input("Enter in video game 1 here --> ")
-		game1_sales = get_Sales(game1, conn)
-		game2 = input("Enter in video game 2 here --> ")
-		game2_sales = get_Sales(game2, conn)
-		game3 = input("Enter in video game 3 here --> ")
-		game3_sales = get_Sales(game3, conn)
+		game1_sales = []
+		game2_sales = []
+		game3_sales = []
+		while len(game1_sales) == 0:
+			game1 = input("Enter in video game 1 here --> ")
+			game1_sales = get_Sales(game1, conn)
+		while len(game2_sales) == 0:
+			game2 = input("Enter in video game 2 here --> ")
+			game2_sales = get_Sales(game2, conn)
+		while len(game3_sales) == 0:
+			game3 = input("Enter in video game 3 here --> ")
+			game3_sales = get_Sales(game3, conn)
 		bar_sales3(game1, game2, game3, game1_sales, game2_sales, game3_sales)
 	elif num == "4":
-		game1 = input("Enter in video game 1 here --> ")
-		game1_sales = get_Sales(game1, conn)
-		game2 = input("Enter in video game 2 here --> ")
-		game2_sales = get_Sales(game2, conn)
-		game3 = input("Enter in video game 3 here --> ")
-		game3_sales = get_Sales(game3, conn)
-		game4 = input("Enter in video game 4 here --> ")
-		game4_sales = get_Sales(game4, conn)
+		game1_sales = []
+		game2_sales = []
+		game3_sales = []
+		game4_sales = []
+		while len(game1_sales) == 0:
+			game1 = input("Enter in video game 1 here --> ")
+			game1_sales = get_Sales(game1, conn)
+		while len(game2_sales) == 0:
+			game2 = input("Enter in video game 2 here --> ")
+			game2_sales = get_Sales(game2, conn)
+		while len(game3_sales) == 0:
+			game3 = input("Enter in video game 3 here --> ")
+			game3_sales = get_Sales(game3, conn)
+		while len(game4_sales) == 0:
+			game4 = input("Enter in video game 4 here --> ")
+			game4_sales = get_Sales(game4, conn)
 		bar_sales4(game1, game2, game3, game4, game1_sales, game2_sales, game3_sales, game4_sales)
 	elif num == "5":
-		game1 = input("Enter in video game 1 here --> ")
-		game1_sales = get_Sales(game1, conn)
-		game2 = input("Enter in video game 2 here --> ")
-		game2_sales = get_Sales(game2, conn)
-		game3 = input("Enter in video game 3 here --> ")
-		game3_sales = get_Sales(game3, conn)
-		game4 = input("Enter in video game 4 here --> ")
-		game4_sales = get_Sales(game4, conn)
-		game5 = input("Enter in video game 5 here --> ")
-		game5_sales = get_Sales(game5, conn)
+		game1_sales = []
+		game2_sales = []
+		game3_sales = []
+		game4_sales = []
+		game5_sales = []
+		while len(game1_sales) == 0:
+			game1 = input("Enter in video game 1 here --> ")
+			game1_sales = get_Sales(game1, conn)
+		while len(game2_sales) == 0:
+			game2 = input("Enter in video game 2 here --> ")
+			game2_sales = get_Sales(game2, conn)
+		while len(game3_sales) == 0:
+			game3 = input("Enter in video game 3 here --> ")
+			game3_sales = get_Sales(game3, conn)
+		while len(game4_sales) == 0:
+			game4 = input("Enter in video game 4 here --> ")
+			game4_sales = get_Sales(game4, conn)
+		while len(game5_sales) == 0:
+			game5 = input("Enter in video game 5 here --> ")
+			game5_sales = get_Sales(game5, conn)
 		bar_sales5(game1, game2, game3, game4, game5, game1_sales, game2_sales, game3_sales, game4_sales, game5_sales)
 	else:
 		print("Invalid input please put a number between 2 and 5.")
@@ -913,10 +947,10 @@ def menu(int):
 		0: 
 '''
 **********************************************
-*		Welcome to the JAR Database			 *
-*											 *
-*  Here you will find data for over 16,000 	 *
-*  				video games! 				 *
+*       Welcome to the JAR Database          *
+
+*  Here you will find data for over 16,000   *
+*               video games!                 *
 **********************************************
 
 What would you like to explore in our database?
@@ -931,11 +965,11 @@ Please enter the number that is next to your choice
 		1: 
 '''
 Multiple games match that search. Can you be more specific?
-Choose a more specific name(n)
-Choose a year(y)
-Choose a genre(g)
-Choose a console of platform(c)
-Print the games you have so far(p)
+1. Choose a more specific name
+2. Choose a year
+3. Choose a genre
+4. Choose a console of platform
+5. Print the games you have so far
 ''',
 
 		2: 
@@ -952,7 +986,7 @@ Print the games you have so far(p)
 a. Other sales
 b. Global sales
 
-Type the number(s) and/or letter(s) you want, in the order you want them.\nSearch(if you wwould like them all, put a *): ",
+Type the number(s) and/or letter(s) you want, in the order you want them.\n(If you would like them all, put a *): ",
 ''',
 
 		3: 
@@ -978,11 +1012,11 @@ Which conditional?
 		5:
 '''
 *************************************
-*	 Welcome to the data section!	*
-* 									*
-*	Here you will be able to view 	*
-*	data on any game(s) specified	*
-*		by your input. Enjoy!		*
+*    Welcome to the data section!   *
+
+*   Here you will be able to view   *
+*   data on any game(s) specified   *
+*       by your input. Enjoy!       *
 *************************************
 What data would you like to see?
 
