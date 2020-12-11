@@ -47,17 +47,17 @@ def main():
 		menu(0)								#output initial menu
 		val = input()
 		print(val)
-		while val != "q" and val != "quit":
-			if val == "s" or val == "search":
+		while val != "0":
+			if val == "1":
 				search(conn)					#search through the database, sql style
-			elif val == "w" or val == "watch":
+			elif val == "2":
 				watch(conn)						#pull up a twitch stream of the game
-			elif val == "d" or val == "data":
+			elif val == "3":
 				data(conn)							#look at the data in a visualized format
 			time.sleep(.5)
 			menu(0)
 			val = input()					#loop
-		print("Have a great day!")
+		print("\nThank you for using the JAR Database!\nHave a great day!\n")
 
 
 
@@ -85,7 +85,10 @@ query on their own.
 '''
 def search(conn):
 	str = "select "
-	print("\nWhich attributes to you want to use?\n")
+	print("******************************************")
+	print("*	 Welcome to the Search section!		*")
+	print("******************************************")
+	print("\nWhich attributes do you want to use to search?\n")
 	menu(2)						#Takes a string representing all the columns they want
 	val = input()			#take that string in
 	liz = process(val)			#process the string, turning it into a list of attributes
@@ -106,26 +109,26 @@ def search(conn):
 	str = conditions(str, False)	#compile the conditions the user wants
 
 	#group operation
-	val = input("Do you want the group the output to a certain attribute? \n(yes/no): ")
-	if val == "yes" or val == "y":
+	val = input("Do you want to group the output by a certain attribute? \nEnter 1 for yes and 0 for no: ")
+	if val == "1":
 		print("Which attribute?\n")
 		val = att_grab()					#att_grab() grabs a single column
 		str += "group by " + val + " "
 
 		#having operation
-		val = input("Do you want to have a condition for these groupings?\n(yes/no): ")
-		if val == "yes" or val == "y":
+		val = input("Do you want to have a condition for these groupings?\n(1 for yes and 0 for no): ")
+		if val == "1":
 			str = conditions(str,True)	#adds only one conditional (true prevents looping)
 
 	#order by operation
-	val = input("Do you want the output sorted?\n(y/n): ")
-	if val == "yes" or val == "y":
+	val = input("Do you want the output sorted?\n(1 for yes and 0 for no): ")
+	if val == "1":
 		str += " order by"
 		str = order(str)				#loops for how many orders the user wants
 
 	#limit operation
-	val = input("Do you want a limit to the return values? (y/n): ")
-	if val == "yes" or val == "y":
+	val = input("Do you want a limit to the return values? (1 for yes and 0 for no): ")
+	if val == "1":
 		val = input("Limit by how many?: ")		#how many rows does the user want (at max)
 		while not val.isnumeric():
 			val = input("Not a valid number, or you included spaces. Try again: ")
@@ -395,7 +398,7 @@ def att_grab():
 	elif val == "b":
 		return "Global_Sales"
 	else:
-		print("Not an attribute. Pick better next time.")
+		print("Not an attribute. Please try again.")
 		return att_grab()	#recursively make them return a valid attribute
 
 
@@ -404,16 +407,16 @@ Makes the encoding for the ordering operation
 '''
 def order(line):
 	val = ""
-	while val != "no" and val != "n":											#while the user isn't done...
+	while val != "0":											#while the user isn't done...
 		val = att_grab()														#grab an attribute
-		up_down = input("Order by ascending or descending? (asc/desc): ")	#do the want the attribute in ascending or descending order?
-		if up_down == "a" or up_down == "asc":
+		up_down = input("Order by ascending or descending? (1 for asc, 0 for desc): ")	#do the want the attribute in ascending or descending order?
+		if up_down == "1":
 			line += " " + val + " asc,"											#ascending encoding
-		elif up_down == "d" or up_down == "desc":
+		elif up_down == "0":
 			line += " " + val + " desc,"										#descending encoding
 		else:
-			print("Try again, idiot.")
-		val = input("Want to sort further? (yes/no): ")						#ask if they want more
+			print("Invalid input. Please try again.")
+		val = input("Want to sort further? (1 for yes, 0 for no): ")					#ask if they want more
 	return line[:-1]															#return the line, without the final comma
 
 
@@ -425,13 +428,20 @@ they find a game they want to watch
 '''
 def watch(conn):
 	line = "https://twitch.tv/directory/game/"											#base URL
-	val = input("Looking for a specific game, or something new? (specific/new)\n")	#ask the user if they want new, or something specific
+	print("**********************************")
+	print("* Welcome to the watch section!	*")
+	print("*								*")
+	print("* Here you will be able to watch	*")
+	print("*   a stream via Twitch of any	*")
+	print("*	  game you would like!		*")
+	print("**********************************")
+	val = input("\nAre you looking for a specific game, or something new? (1 for specific, 0 for new)\n")	#ask the user if they want new, or something specific
 	curr = conn.cursor()
 	dummy = False															#cursor for searching
 
 	#specific
-	if val == "specific" or val == "s":
-		val = input("Type of the name of the game in: ")		#get the specific value
+	if val == "1":
+		val = input("\nPlease enter the name of the game: ")		#get the specific value
 		search = "select name, platform, year, genre from sales where name like '%" + val + "%'"
 		curr.execute(search)														#search for the specific value
 
@@ -443,7 +453,7 @@ def watch(conn):
 		line += rows[0][0]
 
 	#new
-	elif val == "new" or val == "n":			
+	elif val == "0":			
 		curr.execute("select name from sales where year > '2015'")	#find all games from 2016-forward
 
 		rows = curr.fetchall()						#grab all games
@@ -518,7 +528,7 @@ def reduce(lizt):
 
 	
 	else:
-		print("Not valid, asshole.")
+		print("Not valid.")
 
 	#after they do the reduction, check if they accidentally got rid of everything. 
 	if len(clone) == 0:
@@ -771,7 +781,7 @@ def data(conn):
 # Prints a matplotlib bar chart of sales for multiple games.
 def data3(conn):
 	print("")
-	print("How many games would you like to compare? (You compare between 2 - 5 games)")
+	print("How many games would you like to compare? (You can compare 2 to 5 games): ")
 	num = input()
 
 	if num == "2": 
@@ -816,19 +826,19 @@ def data3(conn):
 def data_menu(conn):
 	menu(5)
 	val = input()
-	while val != "Q" and val != "q" and val != "Quit" and val != "quit":
-		if val == "sales" or val == "Sales" or val == "s":
+	while val != "0":
+		if val == "1":
 			data(conn)
-		elif val == "sales2" or val == "Sales2" or val == "s2":
+		elif val == "2":
 			data3(conn)
-		elif val == "pie" or val == "Pie" or val == "p":
+		elif val == "3":
 			data2(conn)
-		elif val == "name" or val == "Name":
+		elif val == "4":
 			data5(conn)
 		time.sleep(.5)
 		menu(5)
 		val = input()
-		if val == "Q" or val == "q" or val == "quit" or val == "Quit":
+		if val == "0":
 			print("\nHeading back to main menu ...")
 
 # pie chart data
@@ -888,7 +898,7 @@ def genre_chart(name, all_game_names, conn):
 	plt.show()
 
 def data5(conn):
-	print("Which character/name/phrase would you like to see data for? (case specific) ")
+	print("\nWhich character/name would you like to see data for? (Please note: data is case specific) ")
 	name = input()
 	all_game_names = get_Games(name, conn)
 	genre_chart(name, all_game_names, conn)
@@ -902,16 +912,20 @@ def menu(int):
 	switcher = {
 		0: 
 '''
-*********************************************
-* Welcome to the video game sales database! *
-*********************************************
+**********************************************
+*		Welcome to the JAR Database			 *
+*											 *
+*  Here you will find data for over 16,000 	 *
+*  				video games! 				 *
+**********************************************
 
-What would you like to do?
+What would you like to explore in our database?
 
-Search for games (search/s)
-Watch a particular game (watch/w)
-Look through data about games (data/d)
-Quit application (quit/q)
+Please enter the number that is next to your choice
+1. Search for games
+2. Watch a particular game (via Twitch)
+3. Look through data about games
+0. Quit application
 		''',
 		
 		1: 
@@ -936,8 +950,9 @@ Print the games you have so far(p)
 8. European Sales
 9. Japan Sales
 a. Other sales
-b.Global sales
-Type the letters and numbers you want, in the order you want them.\nSearch(if you want them all, put a *): ",
+b. Global sales
+
+Type the number(s) and/or letter(s) you want, in the order you want them.\nSearch(if you wwould like them all, put a *): ",
 ''',
 
 		3: 
@@ -962,14 +977,23 @@ Which conditional?
 ''',
 		5:
 '''
---------------------------------
-- Welcome to the data section! -
---------------------------------
-Would you like to see sales data about games? (yes: sales)
-Would you like to see sales data between multiple games? (yes: sales2)
-Would you like to see a pie chart showing the most common genres? (yes: pie)
-Would you like to see how many games contain a certain character or name? (yes: name)
-Quit? (Q/q)
+*************************************
+*	 Welcome to the data section!	*
+* 									*
+*	Here you will be able to view 	*
+*	data on any game(s) specified	*
+*		by your input. Enjoy!		*
+*************************************
+What data would you like to see?
+
+Please enter the number that is next to your choice:
+
+1. Sales data for a single game
+2. Sales data between multiple games
+3. Chart of the most common genres in our database
+4. Chart of games that contain a certain character or name? (example: Mario)
+0. Quit and go back to main menu
+
 '''
 	}
 	print(switcher.get(int, "ERROR"))
