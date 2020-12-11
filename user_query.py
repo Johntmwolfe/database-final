@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 plt.rcParams.update({'figure.max_open_warning': 0})
 from sqlite3 import Error
 from tabulate import tabulate
-import numpy as np 
-import pandas as pd
+import numpy as np
+
 """
 information below is summarized on sqlitetutorial.net
 
@@ -714,33 +714,69 @@ def data_menu(conn):
 		menu(5)
 		val = input()
 		if val == "Q" or val == "q" or val == "quit" or val == "Quit":
-			print("Have a great day!")
+			print("\nHeading back to main menu ...")
 
 # pie chart data
 def data2(conn):
 	genres = 'Action', 'Sports', 'Misc', 'Role-Playing', 'Shooter', 'Adventure', 'Racing', 'Platform', 'Simulation', 'Fighting', 'Strategy', 'Puzzel'
 	sizes = [20, 14, 10, 9, 8, 8, 8, 5, 5, 5, 4, 4]
+	colors = ['red', 'orangered', 'darkorange', 'orange', 'gold', 'yellow', 'mediumseagreen', 'springgreen', 'dodgerblue', 'deepskyblue', 'mediumorchid', 'violet']
 	fig = plt.figure(figsize =(10, 7))
-	plt.pie(sizes, labels = genres, autopct='%1.1f%%')
+	plt.pie(sizes, labels = genres, autopct='%.1f%%', colors=colors)
+	plt.title("Most Common Genres:")
+	plt.legend(genres, loc="upper right")
 	plt.show()
 
 def get_Games(name, conn):
 	with conn:
-		game_genres = "SELECT Name, Genre FROM sales WHERE Name = ?;"
-		return conn.execute(game_genres, (name,)).fetchone()
-def game_pie_chart(name, all_game_names):
-	df = pd.read_csv('vgsales.csv')
-	genre_data = df['Genre']
-	game_data = df['Name']
-	plt.pie(game_data, labels=genre_data, autopct='%1.1%%')
-	plt.title("Most Popular Genres for %" + name + "%")
+		game_genres = "SELECT Name, Genre FROM sales WHERE Name LIKE ?;"
+		return conn.execute(game_genres, ("%{}%".format(name),)).fetchone()
+
+def genre_chart(name, all_game_names, conn):
+	x = ["Action", "Sports", "Misc", "Role-Playing", "Shooter", "Adventure", "Racing", "Platform", "Simulation", "Fighting", "Strategy", "Puzzle"]
+	y = []
+	for games in all_game_names:
+		y.append(games)
+	count_y = []
+	action = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Action'", ("%{}%".format(name),)).fetchone()
+	count_y.append(action)
+	sports = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Sports'", ("%{}%".format(name),)).fetchone()
+	count_y.append(sports)
+	misc = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Misc'", ("%{}%".format(name),)).fetchone()
+	count_y.append(misc)
+	role = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Role-Playing'", ("%{}%".format(name),)).fetchone()
+	count_y.append(role)
+	shooter = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Shooter'", ("%{}%".format(name),)).fetchone()
+	count_y.append(shooter)
+	adventure = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Adventure'", ("%{}%".format(name),)).fetchone()
+	count_y.append(adventure)
+	race = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Racing'", ("%{}%".format(name),)).fetchone()
+	count_y.append(race)
+	platform = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Platform'", ("%{}%".format(name),)).fetchone()
+	count_y.append(platform)
+	sim = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Simulation'", ("%{}%".format(name),)).fetchone()
+	count_y.append(sim)
+	fight = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Fighting'", ("%{}%".format(name),)).fetchone()
+	count_y.append(fight)
+	strat = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Strategy'", ("%{}%".format(name),)).fetchone()
+	count_y.append(strat)
+	puzzle = conn.execute("SELECT COUNT(Genre) FROM sales WHERE Name LIKE ? AND Genre = 'Puzzle'", ("%{}%".format(name),)).fetchone()
+	count_y.append(puzzle)
+
+	y2 = [i[0] for i in count_y]
+	explode = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
+	colors = ['red', 'orangered', 'darkorange', 'orange', 'gold', 'yellow', 'mediumseagreen', 'springgreen', 'dodgerblue', 'deepskyblue', 'mediumorchid', 'violet']
+	fig = plt.figure(figsize =(13, 10))
+	plt.pie(y2, autopct='%.2f%%', explode=explode, colors=colors)
+	plt.title("Most Popular Genres Containing - " + name)
+	plt.legend(x, loc="upper right")
 	plt.show()
 
 def data5(conn):
-	print("Which character/name/phrase would you like to see data for?")
+	print("Which character/name/phrase would you like to see data for? (case specific) ")
 	name = input()
 	all_game_names = get_Games(name, conn)
-	game_pie_chart(name, all_game_names)
+	genre_chart(name, all_game_names, conn)
 
 '''
 A place to store the large ass strings. These are 
@@ -750,8 +786,11 @@ def menu(int):
 	switcher = {
 		0: 
 '''
-Welcome to the video game sales database!
+*********************************************
+* Welcome to the video game sales database! *
+*********************************************
 What would you like?
+
 Search for games (search/s)
 Watch a particular game (watch/w)
 Look through data about games (data/d)
@@ -806,10 +845,12 @@ Which conditional?
 ''',
 		5:
 '''
-Welcome to the data section!
+--------------------------------
+- Welcome to the data section! -
+--------------------------------
 Would you like to see sales data about games? (yes: sales)
 Would you like to see a pie chart showing the most common genres? (yes: pie)
-Would you like to see how many games contain a certain character or name? (yes: name)
+Would you like to see a chart of how many games contain a certain character or name? (yes: name)
 Quit? (Q/q)
 '''
 	}
