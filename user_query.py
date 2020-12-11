@@ -555,7 +555,11 @@ def get_Sales(game_name, conn):
 		print("")
 		print("This game has multiple other games with a smiliar name. Please enter standing number based on the name of the game you are looking for from the table above.")
 		num = input()
-		new_sales2 = "SELECT NA_Sales, EU_Sales, JP_Sales, Other_Sales, Global_Sales FROM sales WHERE Standing = ?;"
+		new_sales2 = "SELECT Name, NA_Sales, EU_Sales, JP_Sales, Other_Sales, Global_Sales FROM sales WHERE Standing = ?;"
+		#correct_name2 = get_Name(num, conn)
+		#correct_name = "SELECT Name FROM sales WHERE Standing = ?"
+		#correct_name2 = conn.execute(correct_name, (num, )).fetchone()
+		#print("This is the correct name2 --> ", correct_name2)
 		return conn.execute(new_sales2, (num,)).fetchone()
 
 # Creates the bar diagram for the sales from each region
@@ -563,8 +567,9 @@ def bar_sales(all_sales):
 	x = ["North America", "Europe", "Japan", "Others", "Global"]
 	c = ["red", "orange", "yellow", "green", "blue"]
 	h = []
-	for index in all_sales:
+	for index in all_sales[1:]:
 		h.append(float(index))
+	print("This is the h array --> ", h)
 	plt.style.use('dark_background')
 	plt.bar(x, h, color=c, linewidth=1, edgecolor="white")
 	plt.annotate(str(h[0]), xy=(0, h[0] + 1))
@@ -574,7 +579,7 @@ def bar_sales(all_sales):
 	plt.annotate(str(h[4]), xy=(4, h[4] + 1))
 	plt.xlabel("Sales in regions")
 	plt.ylabel("Sales in millions")
-	plt.title("Video game sales")
+	plt.title("Video game sales for: " + all_sales[0])
 	plt.show()
 
 # Creates the bar diagram for the sales from each region for 2 games
@@ -583,15 +588,15 @@ def bar_sales2(game1, game2, game1_sales, game2_sales):
 	h1 = []
 	h2 = []
 	bar_width = 0.35
-	for index in game1_sales:
+	for index in game1_sales[1:]:
 		h1.append(float(index))
-	for index2 in game2_sales:
+	for index2 in game2_sales[1:]:
 		h2.append(float(index2))
 	bar1 = np.arange(len(x))
 	bar2 = [i+bar_width for i in bar1]
 	plt.style.use('dark_background')
-	plt.bar(bar1, h1, bar_width, color="red", linewidth=1, edgecolor="white", label=game1)
-	plt.bar(bar2, h2, bar_width, color="orange", linewidth=1, edgecolor="white", label=game2)
+	plt.bar(bar1, h1, bar_width, color="red", linewidth=1, edgecolor="white", label=game1_sales[0])
+	plt.bar(bar2, h2, bar_width, color="orange", linewidth=1, edgecolor="white", label=game2_sales[0])
 	plt.annotate(str(h1[0]), xy=(0, h1[0] + 1))
 	plt.annotate(str(h1[1]), xy=(1, h1[1] + 1))
 	plt.annotate(str(h1[2]), xy=(2, h1[2] + 1))
@@ -616,19 +621,19 @@ def bar_sales3(game1, game2, game3, game1_sales, game2_sales, game3_sales):
 	h2 = []
 	h3 = []
 	bar_width = 0.2
-	for index in game1_sales:
+	for index in game1_sales[1:]:
 		h1.append(float(index))
-	for index2 in game2_sales:
+	for index2 in game2_sales[1:]:
 		h2.append(float(index2))
-	for index3 in game3_sales:
+	for index3 in game3_sales[1:]:
 		h3.append(float(index3))
 	bar1 = np.arange(len(x))
 	bar2 = [i+bar_width for i in bar1]
 	bar3 = [i+bar_width for i in bar2]
 	plt.style.use('dark_background')
-	plt.bar(bar1, h1, bar_width, color="red", linewidth=1, edgecolor="white", label=game1)
-	plt.bar(bar2, h2, bar_width, color="orange", linewidth=1, edgecolor="white", label=game2)
-	plt.bar(bar3, h3, bar_width, color="gold", linewidth=1, edgecolor="white", label=game3)
+	plt.bar(bar1, h1, bar_width, color="red", linewidth=1, edgecolor="white", label=game1_sales[0])
+	plt.bar(bar2, h2, bar_width, color="orange", linewidth=1, edgecolor="white", label=game2_sales[0])
+	plt.bar(bar3, h3, bar_width, color="gold", linewidth=1, edgecolor="white", label=game3_sales[0])
 	plt.annotate(str(h1[0]), xy=(0, h1[0] + 1))
 	plt.annotate(str(h1[1]), xy=(1, h1[1] + 1))
 	plt.annotate(str(h1[2]), xy=(2, h1[2] + 1))
@@ -661,23 +666,23 @@ def bar_sales4(game1, game2, game3, game4, game1_sales, game2_sales, game3_sales
 	h3 = []
 	h4 = []
 	bar_width = 0.2
-	for index in game1_sales:
+	for index in game1_sales[1:]:
 		h1.append(float(index))
-	for index2 in game2_sales:
+	for index2 in game2_sales[1:]:
 		h2.append(float(index2))
-	for index3 in game3_sales:
+	for index3 in game3_sales[1:]:
 		h3.append(float(index3))
-	for index4 in game4_sales:
+	for index4 in game4_sales[1:]:
 		h4.append(float(index4))
 	bar1 = np.arange(len(x))
 	bar2 = [i+bar_width for i in bar1]
 	bar3 = [i+bar_width for i in bar2]
 	bar4 = [i+bar_width for i in bar3]
 	plt.style.use('dark_background')
-	plt.bar(bar1, h1, bar_width, color="red", linewidth=1, edgecolor="white", label=game1)
-	plt.bar(bar2, h2, bar_width, color="orange", linewidth=1, edgecolor="white", label=game2)
-	plt.bar(bar3, h3, bar_width, color="gold", linewidth=1, edgecolor="white", label=game3)
-	plt.bar(bar4, h4, bar_width, color="green", linewidth=1, edgecolor="white", label=game4)
+	plt.bar(bar1, h1, bar_width, color="red", linewidth=1, edgecolor="white", label=game1_sales[0])
+	plt.bar(bar2, h2, bar_width, color="orange", linewidth=1, edgecolor="white", label=game2_sales[0])
+	plt.bar(bar3, h3, bar_width, color="gold", linewidth=1, edgecolor="white", label=game3_sales[0])
+	plt.bar(bar4, h4, bar_width, color="green", linewidth=1, edgecolor="white", label=game4_sales[0])
 	plt.annotate(str(h1[0]), xy=(0, h1[0] + 1))
 	plt.annotate(str(h1[1]), xy=(1, h1[1] + 1))
 	plt.annotate(str(h1[2]), xy=(2, h1[2] + 1))
@@ -717,15 +722,15 @@ def bar_sales5(game1, game2, game3, game4, game5, game1_sales, game2_sales, game
 	h4 = []
 	h5 = []
 	bar_width = 0.15
-	for index in game1_sales:
+	for index in game1_sales[1:]:
 		h1.append(float(index))
-	for index2 in game2_sales:
+	for index2 in game2_sales[1:]:
 		h2.append(float(index2))
-	for index3 in game3_sales:
+	for index3 in game3_sales[1:]:
 		h3.append(float(index3))
-	for index4 in game4_sales:
+	for index4 in game4_sales[1:]:
 		h4.append(float(index4))
-	for index5 in game5_sales:
+	for index5 in game5_sales[1:]:
 		h5.append(float(index5))
 	bar1 = np.arange(len(x))
 	bar2 = [i+bar_width for i in bar1]
@@ -733,11 +738,11 @@ def bar_sales5(game1, game2, game3, game4, game5, game1_sales, game2_sales, game
 	bar4 = [i+bar_width for i in bar3]
 	bar5 = [i+bar_width for i in bar4]
 	plt.style.use('dark_background')
-	plt.bar(bar1, h1, bar_width, color="red", linewidth=1, edgecolor="white", label=game1)
-	plt.bar(bar2, h2, bar_width, color="orange", linewidth=1, edgecolor="white", label=game2)
-	plt.bar(bar3, h3, bar_width, color="gold", linewidth=1, edgecolor="white", label=game3)
-	plt.bar(bar4, h4, bar_width, color="green", linewidth=1, edgecolor="white", label=game4)
-	plt.bar(bar5, h5, bar_width, color="blue", linewidth=1, edgecolor="white", label=game5)
+	plt.bar(bar1, h1, bar_width, color="red", linewidth=1, edgecolor="white", label=game1_sales[0])
+	plt.bar(bar2, h2, bar_width, color="orange", linewidth=1, edgecolor="white", label=game2_sales[0])
+	plt.bar(bar3, h3, bar_width, color="gold", linewidth=1, edgecolor="white", label=game3_sales[0])
+	plt.bar(bar4, h4, bar_width, color="green", linewidth=1, edgecolor="white", label=game4_sales[0])
+	plt.bar(bar5, h5, bar_width, color="blue", linewidth=1, edgecolor="white", label=game5_sales[0])
 	plt.annotate(str(h1[0]), xy=(0, h1[0] + 1))
 	plt.annotate(str(h1[1]), xy=(1, h1[1] + 1))
 	plt.annotate(str(h1[2]), xy=(2, h1[2] + 1))
